@@ -26,15 +26,25 @@ namespace ZelluSim.CellField
 
         //public methods:
 
+        /// <inheritdoc/>
         public abstract void SetAllCells(T value, bool tryDeepCopy = false);
 
+        /// <inheritdoc/>
         public abstract T this[int x, int y] { get; set; }
 
+        /// <inheritdoc/>
+        public abstract T GetCellValue(int x, int y);
+
+        /// <inheritdoc/>
+        public abstract void SetCellValue(int x, int y, T value);
+
+        /// <inheritdoc/>
         public void ClearAllWithDefault()
         {
             SetAllCells(default);
         }
 
+        /// <inheritdoc/>
         public CloningPolicy CloningPolicy
         {
             get => cloningPolicy;
@@ -61,7 +71,8 @@ namespace ZelluSim.CellField
             }
         }
 
-        public void CloneForOther(int fromThisX, int fromThisY, IGenericCellField2D<T> other, int toOtherX, int toOtherY)
+        /// <inheritdoc/>
+        public void CloneIntoOther(int fromThisX, int fromThisY, IGenericCellField2D<T> other, int toOtherX, int toOtherY)
         {
             switch (CloningPolicy)
             {
@@ -75,11 +86,12 @@ namespace ZelluSim.CellField
                     return;
                 case CloningPolicy.AUTO_DETECT:
                     DetectCloneables();
-                    CloneForOther(fromThisX, fromThisY, other, toOtherX, toOtherY);
+                    CloneIntoOther(fromThisX, fromThisY, other, toOtherX, toOtherY);
                     return;
             }
         }
 
+        /// <inheritdoc/>
         public void CloneFromOther(IGenericCellField2D<T> other, int fromOtherX, int fromOtherY, int toThisX, int toThisY)
         {
             switch (CloningPolicy)
@@ -98,25 +110,6 @@ namespace ZelluSim.CellField
                 case CloningPolicy.AUTO_DETECT:
                     DetectCloneables();
                     CloneFromOther(other, fromOtherX, fromOtherY, toThisX, toThisY);
-                    return;
-            }
-        }
-
-        public void CloneInSelf(int fromX, int fromY, int toX, int toY)
-        {
-            switch (CloningPolicy)
-            {
-                case CloningPolicy.TRY_DEEP_CLONE:
-                    T element = this[fromX, fromY];
-                    this[toX, toY] = element is ICloneable cloneable ? (T)cloneable.Clone() : element;
-                    return;
-                case CloningPolicy.DO_NOT_TRY_DEEP_CLONE:
-                case CloningPolicy.USE_DEFAULT:
-                    this[toX, toY] = this[fromX, fromY];
-                    return;
-                case CloningPolicy.AUTO_DETECT:
-                    DetectCloneables();
-                    CloneInSelf(fromX, fromY, toX, toY);
                     return;
             }
         }

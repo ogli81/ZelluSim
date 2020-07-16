@@ -11,18 +11,8 @@ namespace ZelluSim.CellField
     /// values <see cref="IBinaryCellField2D"/>.
     /// </summary>
     /// <typeparam name="T">Any type you want, but consider bool with <see cref="IBinaryCellField2D"/></typeparam>
-    public interface IGenericCellField2D<T> : ICloneable
+    public interface IGenericCellField2D<T> : ICellField2D, ICloneable
     {
-        /// <summary>
-        /// The number of cells in x (horizontal) direction.
-        /// </summary>
-        int CellsX { get; }
-
-        /// <summary>
-        /// The number of cells in y (vertical) direction.
-        /// </summary>
-        int CellsY { get; }
-
         /// <summary>
         /// Try to get the content of the neighboring cell in that specific direction. 
         /// This behavior uses the "wrap-around at world boundaries" semantics.
@@ -73,11 +63,6 @@ namespace ZelluSim.CellField
         void SetAllCells(T value, bool tryDeepCopy = false);
 
         /// <summary>
-        /// Will set the content of all cells to the default value of the type T.
-        /// </summary>
-        void ClearAllWithDefault();
-
-        /// <summary>
         /// Try to get or set the cell value via a (2-dimensional) indexer. 
         /// The attempt may fail when x or y is out of bounds (an exception will be thrown).
         /// </summary>
@@ -95,6 +80,7 @@ namespace ZelluSim.CellField
         /// <summary>
         /// Copy/clone the contained elements from a specific source to a specific destination.
         /// The source is in this instance and the destination is in an 'other' instance (but could be this too).
+        /// <br></br>NOTE: The x/y boundaries won't be checked (violating the bounds may lead to unexpected behavior).
         /// <seealso cref="CloningPolicy"/>
         /// <seealso cref="CloneInSelf(int, int, int, int)"/>
         /// <seealso cref="CloneFromOther(IGenericCellField2D{T}, int, int, int, int)"/>
@@ -104,14 +90,15 @@ namespace ZelluSim.CellField
         /// <param name="other">to which other instance should we transfer the copy/clone of the element</param>
         /// <param name="toOtherX">to which x-coordinate should we copy/clone</param>
         /// <param name="toOtherY">to which y-coordinate should we copy/clone</param>
-        void CloneForOther(int fromThisX, int fromThisY, IGenericCellField2D<T> other, int toOtherX, int toOtherY);
+        void CloneIntoOther(int fromThisX, int fromThisY, IGenericCellField2D<T> other, int toOtherX, int toOtherY);
 
         /// <summary>
         /// Copy/clone the contained elements from a specific source to a specific destination.
         /// The source is in an 'other' instance (but could be this too). The destination is in this instance.
+        /// <br></br>NOTE: The x/y boundaries won't be checked (violating the bounds may lead to unexpected behavior).
         /// <seealso cref="CloningPolicy"/>
         /// <seealso cref="CloneInSelf(int, int, int, int)"/>
-        /// <seealso cref="CloneForOther(int, int, IGenericCellField2D{T}, int, int)"/>
+        /// <seealso cref="CloneIntoOther(int, int, IGenericCellField2D{T}, int, int)"/>
         /// </summary>
         /// <param name="other">from which other instance should we transfer the copy/clone of the element</param>
         /// <param name="fromOtherX">from which x-coordinate should we copy/clone</param>
@@ -119,18 +106,5 @@ namespace ZelluSim.CellField
         /// <param name="toThisX">to where (x-coordinate) should we copy/clone</param>
         /// <param name="toThisY">to where (y-coordinate) should we copy/clone</param>
         void CloneFromOther(IGenericCellField2D<T> other, int fromOtherX, int fromOtherY, int toThisX, int toThisY);
-
-        /// <summary>
-        /// Copy/clone the contained elements from a specific source to a specific destination. 
-        /// The source and destination are within this instance.
-        /// <seealso cref="CloningPolicy"/>
-        /// <seealso cref="CloneForOther(int, int, IGenericCellField2D{T}, int, int)"/>
-        /// <seealso cref="CloneFromOther(IGenericCellField2D{T}, int, int, int, int)"/>
-        /// </summary>
-        /// <param name="fromX"></param>
-        /// <param name="fromY"></param>
-        /// <param name="toX"></param>
-        /// <param name="toY"></param>
-        void CloneInSelf(int fromX, int fromY, int toX, int toY);
     }
 }

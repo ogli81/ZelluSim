@@ -43,29 +43,10 @@ namespace ZelluSim.RingBuffer
         /// <param name="other">the other instance</param>
         /// <param name="tryDeepCopy">if the values are references that implement ICloneable then set this to true</param>
         /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
-        public GenericRingBuffer1D(GenericRingBuffer1D<T> other, bool tryDeepCopy = false, 
-            bool copyUnusedElements = false) : this(other.MemSlots)
+        public GenericRingBuffer1D(GenericRingBuffer1D<T> other, bool tryDeepCopy = false, bool copyUnusedElements = false) : 
+            this(other.MemSlots, other, RingBufferEnd.LEFTMOST_FIRST_OLDEST, tryDeepCopy, copyUnusedElements)
         {
-            if (other.Empty)
-            {
-                firstPos = other.firstPos;
-                lastPos = other.lastPos;
-                empty = true;
 
-                if(!copyUnusedElements)
-                    return;
-            }
-
-            if (tryDeepCopy)
-            {
-                for (int pos = 0; pos < MemSlots - 1; pos++)
-                    if (copyUnusedElements || other.IsUsed(pos))
-                        //if (other.ringBuffer[pos] != null && other.ringBuffer[pos] is ICloneable)
-                        if (other.ringBuffer[pos] is ICloneable) //null is not a ICloneable
-                            ringBuffer[pos] = (T)(other.ringBuffer[pos] as ICloneable).Clone();
-            }
-            else
-                Array.Copy(other.ringBuffer, ringBuffer, ringBuffer.Length); //just copy all there is (should be fast enough)
         }
 
         /// <summary>
@@ -103,7 +84,7 @@ namespace ZelluSim.RingBuffer
                 lastPos = ithis;
                 for(int i = 0; i < iMax; i++)
                 {
-                    if (other.IsUsed(iother))
+                    if (other.IsUsed(iother)) //if not in use, it will remain default (usually null or zero)
                     {
                         if (tryDeepCopy && other.ringBuffer[iother] is ICloneable)
                             ringBuffer[ithis] = (T)(other.ringBuffer[iother] as ICloneable).Clone();
@@ -128,7 +109,7 @@ namespace ZelluSim.RingBuffer
                 firstPos = ithis;
                 for (int i = 0; i < iMax; i++)
                 {
-                    if (other.IsUsed(iother))
+                    if (other.IsUsed(iother)) //if not in use, it will remain default (usually null or zero)
                     {
                         if (tryDeepCopy && other.ringBuffer[iother] is ICloneable)
                             ringBuffer[ithis] = (T)(other.ringBuffer[iother] as ICloneable).Clone();
@@ -150,19 +131,6 @@ namespace ZelluSim.RingBuffer
 
 
         //helper methods:
-
-        private bool IsUsed(int arrayPos)
-        {
-#if DEBUG
-            Debug.Assert(arrayPos >= 0, $"arrayPos too low: {arrayPos}");
-            Debug.Assert(arrayPos < ringBuffer.Length, $"arrayPos too hig: {arrayPos}, we only have: {ringBuffer.Length} elements in array");
-#endif
-            if (Empty) return false;
-            if (firstPos <= lastPos)
-                return arrayPos >= firstPos && arrayPos <= lastPos;
-            else
-                return !(arrayPos > lastPos && arrayPos < firstPos);
-        }
 
         protected virtual void MakeEntry(int where, bool clearWithDefault)
         {

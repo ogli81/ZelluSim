@@ -85,7 +85,7 @@ namespace ZelluSim.RingBuffer
         /// </summary>
         /// <param name="x">number of cells in x direction (2nd dimension)</param>
         /// <param name="y">number of cells in y direction (3rd dimension)</param>
-        protected void SafetyCheckNewRingBuffer(int x, int y)
+        private void SafetyCheckNewRingBuffer(int x, int y)
         {
             if (x < 1) throw new ArgumentException("x can't be less than 1!");
             if (y < 1) throw new ArgumentException("y can't be less than 1!");

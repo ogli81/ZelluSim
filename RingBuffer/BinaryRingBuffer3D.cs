@@ -75,7 +75,7 @@ namespace ZelluSim.RingBuffer
         }
 
         /// <summary>
-        /// Make a new instance, copy from other instance (copy c'tor B, third c'tor variant). 
+        /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
         /// Tries to grab as much data from the other instance as possible.
         /// </summary>
         /// <param name="mem">number of memory slots in the ring buffer (1st dimension)</param>
@@ -182,13 +182,14 @@ namespace ZelluSim.RingBuffer
                 ringBuffer[where] = CreateCellField2D(clearWithDefault);
         }
 
+        //TODO: pull up to base class, make base interface for IGenericCellField2D and IBinaryCellField2D
         /// <summary>
         /// Will throw an exception if any of these values violate our rules. 
         /// The rules are as follows: <br></br>
         /// 'template' can't be null - we want to make clones from it
         /// </summary>
         /// <param name="template">we will create clones of this template</param>
-        protected void SafetyCheckNewRingBuffer(IBinaryCellField2D template)
+        private void SafetyCheckNewRingBuffer(IBinaryCellField2D template)
         {
             if (template == null) throw new ArgumentNullException("The template can't be null!");
         }

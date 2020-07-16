@@ -48,6 +48,19 @@ namespace ZelluSim.RingBuffer
                 throw new ArgumentException("please give us at least 2 memory slots!");
         }
 
+        protected bool IsUsed(int arrayPos)
+        {
+#if DEBUG
+            Debug.Assert(arrayPos >= 0, $"arrayPos too low: {arrayPos}");
+            Debug.Assert(arrayPos < MemSlots, $"arrayPos too hig: {arrayPos}, we only have: {MemSlots} elements in array");
+#endif
+            if (Empty) return false;
+            if (firstPos <= lastPos)
+                return arrayPos >= firstPos && arrayPos <= lastPos;
+            else
+                return !(arrayPos > lastPos && arrayPos < firstPos);
+        }
+
         protected void MoveLastForward()
         {
             if (empty)

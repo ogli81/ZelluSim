@@ -16,7 +16,7 @@ namespace ZelluSim.RingBuffer
     {
         //state:
 
-        BitArray ringBuffer;
+        readonly BitArray ringBuffer;
 
 
         //c'tors:
@@ -62,7 +62,7 @@ namespace ZelluSim.RingBuffer
 
             //we copy as much as we can from the other ring buffer
 
-            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from newest to oldest
+            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost
             {
                 int iother = other.lastPos;
                 int ithis = MemSlots - 1;
@@ -82,7 +82,7 @@ namespace ZelluSim.RingBuffer
                 while (iother != other.firstPos);
                 firstPos = ithis;
             }
-            else //go from oldest to newest
+            else //go from leftmost to rightmost
             {
                 int iother = other.firstPos;
                 int ithis = 0;
@@ -144,8 +144,12 @@ namespace ZelluSim.RingBuffer
         /// <param name="value">the value that you want to set</param>
         public void SetEntry(int i, bool value)
         {
-            MoveLastForward();
-            MakeEntry(lastPos, value);
+            BoundsCheck(i);
+            int pos = firstPos + i;
+            pos %= MemSlots; //this is a bit faster than the next two lines (by about 20 percent)
+            //if (pos >= MemSlots) //watch the video "Branchless Programming [...]" on Youtube
+            //    pos -= MemSlots; //to understand what might be the reason for that difference
+            ringBuffer[pos] = value;
         }
 
         /// <summary>
@@ -157,32 +161,35 @@ namespace ZelluSim.RingBuffer
         {
             BoundsCheck(i);
             int pos = firstPos + i;
-            //pos %= MemSlots; //possibly slower (or faster) than the next two lines (TODO: perform simple test comparison)
-            if (pos >= MemSlots)
-                pos -= MemSlots;
+            pos %= MemSlots; //this is a bit faster than the next two lines (by about 20 percent)
+            //if (pos >= MemSlots) //watch the video "Branchless Programming [...]" on Youtube
+            //    pos -= MemSlots; //to understand what might be the reason for that difference
             return ringBuffer[pos];
         }
 
         /// <summary>
-        /// Get the last/rightmost data from the ring buffer.
+        /// Get or set the last/rightmost data from the ring buffer (position is Length-1). 
+        /// Might throw an exception if that position is not available.
         /// </summary>
         public bool Last
         {
-            get => GetEntry(lastPos);
-            set => SetEntry(lastPos, value);
+            get => GetEntry(Length - 1);
+            set => SetEntry(Length - 1, value);
         }
 
         /// <summary>
-        /// Get the first/leftmost data from the ring buffer.
+        /// Get or set the first/leftmost data from the ring buffer (position is 0). 
+        /// Might throw an exception if that position is not available.
         /// </summary>
         public bool First
         {
-            get => GetEntry(firstPos);
-            set => SetEntry(firstPos, value);
+            get => GetEntry(0);
+            set => SetEntry(0, value);
         }
 
         /// <summary>
-        /// Get the data entry right before the last/rightmost entry.
+        /// Get or set the data entry right before the last/rightmost entry (position is Length-2). 
+        /// Might throw an exception if that position is not available.
         /// </summary>
         public bool Previous
         {
@@ -196,7 +203,8 @@ namespace ZelluSim.RingBuffer
         }
 
         /// <summary>
-        /// Get the data entry right after the first/leftmost entry.
+        /// Get or set the data entry right after the first/leftmost entry (position is 1). 
+        /// Might throw an exception if that position is not available.
         /// </summary>
         public bool Second
         {
@@ -210,8 +218,12 @@ namespace ZelluSim.RingBuffer
         }
 
         /// <summary>
-        /// The indexer can be used like this: myRingBuffer[0] <- this will return the oldest data from the ring buffer. 
-        /// The indexer can be used for reading and writing the value (<seealso cref="BinaryRingBuffer1D.SetEntry(int, bool)"/>).
+        /// The indexer can be used like this: 
+        /// <code>
+        /// var first = myRingBuffer[0]; //<- this will return the first/leftmost entry from the ring buffer<br></br>
+        /// var last = myRingBuffer[myRingBuffer.Length - 1]; //this will return the last/rightmost entry
+        /// </code>
+        /// The indexer can be used for reading or writing the value (<seealso cref="BinaryRingBuffer1D.SetEntry(int, bool)"/>).
         /// <br></br>
         /// 0 = leftmost = First  and  Length-1 = rightmost = Last
         /// </summary>

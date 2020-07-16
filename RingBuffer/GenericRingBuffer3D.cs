@@ -45,6 +45,7 @@ namespace ZelluSim.RingBuffer
         /// Makes a copy of the other ring buffer (but only copies useful data, to safe time).
         /// </summary>
         /// <param name="other">the other instance</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public GenericRingBuffer3D(GenericRingBuffer3D<T> other, 
             bool copyUnusedElements = false) : base(other, true, copyUnusedElements)
         {
@@ -61,6 +62,7 @@ namespace ZelluSim.RingBuffer
         /// <param name="mem">number of memory slots in the ring buffer (1st dimension)</param>
         /// <param name="other">the other instance</param>
         /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public GenericRingBuffer3D(int mem, GenericRingBuffer3D<T> other,
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
             bool copyUnusedElements = false) : base(mem, other, startHere, true, copyUnusedElements)
@@ -79,6 +81,7 @@ namespace ZelluSim.RingBuffer
         /// <param name="template">we will create clones of this template</param>
         /// <param name="other">the other instance</param>
         /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public GenericRingBuffer3D(int mem, IGenericCellField2D<T> template, GenericRingBuffer3D<T> other,
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
             bool copyUnusedElements = false) : this(mem, template)
@@ -90,7 +93,12 @@ namespace ZelluSim.RingBuffer
 
             if (other.Empty)
             {
-                return;
+                firstPos = other.firstPos;
+                lastPos = other.lastPos;
+                empty = true;
+
+                if (!copyUnusedElements)
+                    return;
             }
 
             int x = CellsX;
@@ -181,13 +189,14 @@ namespace ZelluSim.RingBuffer
                 ringBuffer[where] = CreateCellField2D(clearWithDefault);
         }
 
+        //TODO: pull up to base class, make base interface for IGenericCellField2D and IBinaryCellField2D
         /// <summary>
         /// Will throw an exception if any of these values violate our rules. 
         /// The rules are as follows: <br></br>
         /// 'template' can't be null - we want to make clones from it
         /// </summary>
         /// <param name="template">we will create clones of this template</param>
-        protected void SafetyCheckNewRingBuffer(IGenericCellField2D<T> template)
+        private void SafetyCheckNewRingBuffer(IGenericCellField2D<T> template)
         {
             if (template == null) throw new ArgumentNullException("The template can't be null!");
         }

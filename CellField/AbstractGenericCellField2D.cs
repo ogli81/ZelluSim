@@ -9,19 +9,31 @@ namespace ZelluSim.CellField
     {
         //state: 
 
-        protected CloningPolicy cloningPolicy = CloningPolicy.DO_NOT_TRY_DEEP_CLONE;
+        protected CloningPolicy cloningPolicy;
 
 
         //c'tors:
 
-        public AbstractGenericCellField2D(int cellsX, int cellsY) : base(cellsX, cellsY)
+        public AbstractGenericCellField2D(int cellsX, int cellsY, 
+            CloningPolicy cloningPolicy = CloningPolicy.DO_NOT_TRY_DEEP_CLONE) : base(cellsX, cellsY)
         {
+            this.cloningPolicy = cloningPolicy;
+            CreateArray(cellsX, cellsY);
+        }
+
+        public AbstractGenericCellField2D(int cellsX, int cellsY,
+            bool tryDeepCopy = false) : base(cellsX, cellsY)
+        {
+            cloningPolicy = tryDeepCopy ? CloningPolicy.TRY_DEEP_CLONE : CloningPolicy.DO_NOT_TRY_DEEP_CLONE;
+            CreateArray(cellsX, cellsY);
         }
 
 
         //helper methods:
 
         protected abstract bool DetectCloneables();
+
+        protected abstract void CreateArray(int cellsX, int cellsY);
 
 
         //public methods:
@@ -30,7 +42,32 @@ namespace ZelluSim.CellField
         public abstract void SetAllCells(T value, bool tryDeepCopy = false);
 
         /// <inheritdoc/>
-        public abstract T this[int x, int y] { get; set; }
+        public T this[int x, int y]
+        {
+            get => GetCellValue(x, y);
+            set => SetCellValue(x, y, value);
+        }
+
+        /// <inheritdoc/>
+        public abstract T GetCellValueWithWrap(int x, int y, Direction direction);
+
+        /// <inheritdoc/>
+        public T GetCellValueWithoutWrap(int x, int y, Direction direction, T outsideVal)
+        {
+            //BoundsCheck(x, y); //the array will do its own bounds check
+            switch (direction)
+            {
+                case Direction.N: if (y == 0) return outsideVal; break;
+                case Direction.NE: if (x == CellsX - 1) return outsideVal; if (y == 0) return outsideVal; break;
+                case Direction.E: if (x == CellsX - 1) return outsideVal; break;
+                case Direction.SE: if (x == CellsX - 1) return outsideVal; if (y == CellsY - 1) return outsideVal; break;
+                case Direction.S: if (y == CellsY - 1) return outsideVal; break;
+                case Direction.SW: if (x == 0) return outsideVal; if (y == CellsY - 1) return outsideVal; break;
+                case Direction.W: if (x == 0) return outsideVal; break;
+                case Direction.NW: if (x == 0) return outsideVal; if (y == 0) return outsideVal; break;
+            }
+            return GetCellValueWithWrap(x, y, direction); //wrap situation (border) can't happen anymore
+        }
 
         /// <inheritdoc/>
         public abstract T GetCellValue(int x, int y);

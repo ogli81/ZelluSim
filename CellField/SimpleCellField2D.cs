@@ -9,21 +9,21 @@ namespace ZelluSim.CellField
     {
         //state
 
-        protected readonly T[,] Cells;
+        //protected readonly T[,] Cells; //older software architecture made this possible
+        protected T[,] Cells;
 
 
         //c'tors
 
-        public SimpleCellField2D(int cellsX, int cellsY) : base(cellsX, cellsY)
+        public SimpleCellField2D(int cellsX, int cellsY) : base(cellsX, cellsY, false)
         {
-            Cells = new T[cellsX, cellsY];
+            
         }
 
-        public SimpleCellField2D(SimpleCellField2D<T> other, bool tryDeepCopy = false) : base(other.CellsX, other.CellsY)
+        public SimpleCellField2D(SimpleCellField2D<T> other, bool tryDeepCopy = false) : base(other.CellsX, other.CellsY, tryDeepCopy)
         {
             if (tryDeepCopy)
             {
-                cloningPolicy = CloningPolicy.TRY_DEEP_CLONE;
                 Cells = new T[other.CellsX, other.CellsY];
                 T element;
                 for (int i = 0; i < CellsX; i++)
@@ -38,14 +38,13 @@ namespace ZelluSim.CellField
             }
             else
             {
-                cloningPolicy = CloningPolicy.DO_NOT_TRY_DEEP_CLONE;
                 Cells = (T[,])other.Cells.Clone(); //should be faster than the following two lines (TODO: performance comparison)
                 //cells = new T[other.cellsX,other.cellsY];
                 //Array.Copy(other.cells, cells, cells.Length);
             }
         }
 
-        public SimpleCellField2D(int cellsX, int cellsY, SimpleCellField2D<T> other, bool tryDeepCopy = false) : this(cellsX, cellsY)
+        public SimpleCellField2D(int cellsX, int cellsY, SimpleCellField2D<T> other, bool tryDeepCopy = false) : base(cellsX, cellsY, tryDeepCopy)
         {
             //we copy as much as we can from the other
             //use top-left corner (0,0), work into x and y direction as far as we can
@@ -72,6 +71,11 @@ namespace ZelluSim.CellField
 
         //helper methods
 
+        protected override void CreateArray(int cellsX, int cellsY)
+        {
+            Cells = new T[cellsX, cellsY];
+        }
+
         protected override bool DetectCloneables()
         {
             foreach (T element in Cells)
@@ -83,8 +87,9 @@ namespace ZelluSim.CellField
 
         //public methods
 
-        public T GetCellValueWithWrap(int x, int y, Direction direction)
+        public override T GetCellValueWithWrap(int x, int y, Direction direction)
         {
+            //BoundsCheck(x, y); //the array will do its own bounds check
             int ix = x, iy = y; //we could operate on x and y, but let's make new variables (cleaner code)
             switch (direction)
             {
@@ -100,40 +105,16 @@ namespace ZelluSim.CellField
             return GetCellValue(ix, iy);
         }
 
-        public T GetCellValueWithoutWrap(int x, int y, Direction direction, T outsideVal)
+        public override T GetCellValue(int x, int y)
         {
-            switch (direction)
-            {
-                case Direction.N: if (y == 0) return outsideVal; break;
-                case Direction.NE: if (x == CellsX - 1) return outsideVal; if (y == 0) return outsideVal; break;
-                case Direction.E: if (x == CellsX - 1) return outsideVal; break;
-                case Direction.SE: if (x == CellsX - 1) return outsideVal; if (y == CellsY - 1) return outsideVal; break;
-                case Direction.S: if (y == CellsY - 1) return outsideVal; break;
-                case Direction.SW: if (x == 0) return outsideVal; if (y == CellsY - 1) return outsideVal; break;
-                case Direction.W: if (x == 0) return outsideVal; break;
-                case Direction.NW: if (x == 0) return outsideVal; if (y == 0) return outsideVal; break;
-            }
-            return GetCellValue(x, y);
-        }
-
-        public T GetCellValue(int x, int y)
-        {
-            BoundsCheck(x, y);
+            //BoundsCheck(x, y); //the array will do its own bounds check
             return Cells[x, y];
         }
 
-        public void SetCellValue(int x, int y, T value)
+        public override void SetCellValue(int x, int y, T value)
         {
             BoundsCheck(x, y);
             Cells[x, y] = value;
-        }
-
-        public override T this[int x, int y]
-        {
-            //get => GetCellValue(x, y);
-            //set => SetCellValue(x, y, value);
-            get => Cells[x, y];
-            set => Cells[x, y] = value;
         }
 
         public override void SetAllCells(T value, bool tryDeepCopy = false)

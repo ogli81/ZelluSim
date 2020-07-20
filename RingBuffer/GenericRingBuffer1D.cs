@@ -62,7 +62,61 @@ namespace ZelluSim.RingBuffer
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST, bool tryDeepCopy = false, 
             bool copyUnusedElements = false) : this(mem)
         {
-            CloneCopyFromOther(mem, other, startHere, tryDeepCopy, copyUnusedElements);
+            if (other.Empty)
+            {
+                firstPos = other.firstPos;
+                lastPos = other.lastPos;
+                empty = true;
+
+                if (!copyUnusedElements)
+                    return;
+            }
+
+            //we copy as many from the active entries from the other ring buffer as will fit into this new ring buffer
+            //start at the desired end, until mem is full
+
+            int iMax = copyUnusedElements ? other.MemSlots : other.Length;
+
+            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost
+            {
+                int iother = other.lastPos;
+                int ithis = MemSlots - 1;
+                int ithisEnd = 0;
+                lastPos = ithis;
+                for (int i = 0; i < iMax; i++)
+                {
+                    CloneCopyEntry(ithis, iother, other, tryDeepCopy);
+
+                    if (ithis == ithisEnd)
+                        break;
+                    ithis--;
+
+                    iother--;
+                    if (iother < 0)
+                        iother = other.MemSlots - 1;
+                }
+                firstPos = ithis;
+            }
+            else //go from leftmost to rightmost
+            {
+                int iother = other.firstPos;
+                int ithis = 0;
+                int ithisEnd = MemSlots - 1;
+                firstPos = ithis;
+                for (int i = 0; i < iMax; i++)
+                {
+                    CloneCopyEntry(ithis, iother, other, tryDeepCopy);
+
+                    if (ithis == ithisEnd)
+                        break;
+                    ithis++;
+
+                    iother++;
+                    if (iother >= other.MemSlots)
+                        iother = 0;
+                }
+                lastPos = ithis;
+            }
         }
 
 
@@ -97,71 +151,12 @@ namespace ZelluSim.RingBuffer
             //(nothing to do - even null values are accepted)
         }
 
-        protected virtual void CloneCopyEntry(int ithis, int iother, GenericRingBuffer1D<T> other, bool tryDeepCopy)
+        private void CloneCopyEntry(int ithis, int iother, GenericRingBuffer1D<T> other, bool tryDeepCopy)
         {
             if (tryDeepCopy && other.ringBuffer[iother] is ICloneable)
                 ringBuffer[ithis] = (T)(other.ringBuffer[iother] as ICloneable).Clone();
             else
                 ringBuffer[ithis] = other.ringBuffer[iother];
-        }
-
-        protected virtual void CloneCopyFromOther(int mem, GenericRingBuffer1D<T> other,
-            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST, bool tryDeepCopy = false,
-            bool copyUnusedElements = false)
-        {
-            if (other.Empty)
-            {
-                firstPos = other.firstPos;
-                lastPos = other.lastPos;
-                empty = true;
-
-                if (!copyUnusedElements)
-                    return;
-            }
-
-            //we copy as many from the active entries from the other ring buffer as will fit into this new ring buffer
-            //start at the desired end, until mem is full
-
-            int iMax = copyUnusedElements ? other.MemSlots : other.Length;
-
-            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost
-            {
-                int iother = other.lastPos;
-                int ithis = MemSlots - 1;
-                lastPos = ithis;
-                for (int i = 0; i < iMax; i++)
-                {
-                    CloneCopyEntry(ithis, iother, other, tryDeepCopy);
-
-                    if (ithis == 0)
-                        break;
-                    ithis--;
-
-                    iother--;
-                    if (iother < 0)
-                        iother = other.MemSlots - 1;
-                }
-                firstPos = ithis;
-            }
-            else //go from leftmost to rightmost
-            {
-                int iother = other.firstPos;
-                int ithis = 0;
-                firstPos = ithis;
-                for (int i = 0; i < iMax; i++)
-                {
-                    CloneCopyEntry(ithis, iother, other, tryDeepCopy);
-
-                    if (ithis == MemSlots - 1)
-                        break;
-                    ithis++;
-
-                    iother++;
-                    if (iother >= other.MemSlots)
-                        iother = 0;
-                }
-                lastPos = ithis;
-            }
         }
 
 

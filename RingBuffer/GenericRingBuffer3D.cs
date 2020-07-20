@@ -14,6 +14,11 @@ namespace ZelluSim.RingBuffer
     /// </typeparam>
     public class GenericRingBuffer3D<T> : AbstractRingBuffer3D<IGenericCellField2D<T>> //: AbstractRingBuffer3D
     {
+        //constants:
+
+        private static (int x, int y) UPPER_LEFT = (0, 0);
+
+
         //state:
 
         protected IGenericCellField2D<T> template;
@@ -65,14 +70,9 @@ namespace ZelluSim.RingBuffer
         /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public GenericRingBuffer3D(int mem, GenericRingBuffer3D<T> other,
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
-            bool copyUnusedElements = false) : base(mem, other, startHere, true, copyUnusedElements)
+            bool copyUnusedElements = false) : this(mem, other.template, other, startHere, copyUnusedElements)
         {
-            //no safety check needed, since the other must have undergone that check
 
-            AcceptTemplates((IGenericCellField2D<T>)other.template.Clone(), 
-                (IGenericCellField2D<T>)other.templateWithDefault.Clone());
-
-            base.CloneCopyFromOther(mem, other, startHere, true, copyUnusedElements);
         }
 
         //fifth variant: change x/y, but keep mem as it is
@@ -115,34 +115,25 @@ namespace ZelluSim.RingBuffer
             int y = CellsY;
             int ox = other.CellsX;
             int oy = other.CellsY;
+            int xBound = Math.Min(x, ox);
+            int yBound = Math.Min(y, oy);
 
             if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST)
             {
                 int iother = other.lastPos;
                 int ithis = MemSlots - 1;
                 lastPos = ithis;
+                ?;//TODO: make it like in GenericRingBuffer1D
                 do
                 {
-                    IGenericCellField2D<T> oarr = other.ringBuffer[iother];
-                    if (oarr == null)
-                    {
-                        ringBuffer[ithis] = null;
-                    }
-                    else
-                    {
-                        MakeEntry(ithis, true);
-                        IGenericCellField2D<T> arr = ringBuffer[ithis];
-                        for (int a = 0; a < x && a < ox; a++)
-                            for (int b = 0; b < y && b < oy; b++)
-                                arr.CloneFromOther(oarr, a, b, a, b);
-                    }
+                    CloneCopyEntry(ithis, iother, other, xBound, yBound);
 
                     if (ithis == 0)
                         break;
                     ithis--;
 
                     iother--;
-                    if (iother < 0)
+                    if (iother == -1)
                         iother = other.MemSlots - 1;
                 }
                 while (iother != other.firstPos);
@@ -155,20 +146,8 @@ namespace ZelluSim.RingBuffer
                 firstPos = ithis;
                 do
                 {
-                    IGenericCellField2D<T> oarr = other.ringBuffer[iother];
-                    if (oarr == null)
-                    {
-                        ringBuffer[ithis] = null;
-                    }
-                    else
-                    {
-                        MakeEntry(ithis, true);
-                        IGenericCellField2D<T> arr = ringBuffer[ithis];
-                        for (int a = 0; a < x && a < ox; a++)
-                            for (int b = 0; b < y && b < oy; b++)
-                                arr.CloneFromOther(oarr, a, b, a, b);
-                    }
-                    
+                    CloneCopyEntry(ithis, iother, other, xBound, yBound);
+
                     if (ithis == MemSlots - 1)
                         break;
                     ithis++;
@@ -191,6 +170,25 @@ namespace ZelluSim.RingBuffer
             templateWithDefault.CloningPolicy = template.CloningPolicy; //same policy for both
             this.template = template;
             this.templateWithDefault = templateWithDefault;
+        }
+
+        private void CloneCopyEntry(int ithis, int iother, GenericRingBuffer3D<T> other, int xBound, int yBound)
+        {
+            IGenericCellField2D<T> oarr = other.ringBuffer[iother];
+            if (oarr == null)
+            {
+                ringBuffer[ithis] = null;
+            }
+            else
+            {
+                MakeEntry(ithis, true);
+                IGenericCellField2D<T> arr = ringBuffer[ithis];
+
+                //for (int a = 0; a < xBound; a++)
+                //    for (int b = 0; b < yBound; b++)
+                //        arr.CloneFromOther(oarr, a, b, a, b);
+                arr.CloneFromRegion(oarr, UPPER_LEFT, (xBound, yBound), UPPER_LEFT);
+            }
         }
 
         protected override void MakeEntry(int where, bool clearWithDefault)
@@ -227,20 +225,6 @@ namespace ZelluSim.RingBuffer
                 if (newValue.CellsX != CellsX) throw new ArgumentException($"cell field must match our CellsX value of {CellsX}!");
                 if (newValue.CellsY != CellsY) throw new ArgumentException($"cell field must match our CellsY value of {CellsY}!");
             }
-        }
-
-        protected override void CloneCopyFromOther(int mem, GenericRingBuffer1D<IGenericCellField2D<T>> other, 
-            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST, bool tryDeepCopy = false, 
-            bool copyUnusedElements = false)
-        {
-            
-        }
-
-        protected virtual void CloneCopyFromOther2(int mem, GenericRingBuffer1D<IGenericCellField2D<T>> other,
-            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST, bool tryDeepCopy = false,
-            bool copyUnusedElements = false)
-        {
-            base.CloneCopyFromOther(mem, other, startHere, tryDeepCopy, copyUnusedElements);
         }
 
 

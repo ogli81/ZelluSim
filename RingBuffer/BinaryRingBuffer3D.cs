@@ -100,6 +100,8 @@ namespace ZelluSim.RingBuffer
             int ox = other.CellsX;
             int oy = other.CellsY;
 
+            ?;//TODO: make it like in GenericRingBuffer1D
+
             if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST)
             {
                 int iother = other.lastPos;

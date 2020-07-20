@@ -135,6 +135,17 @@ namespace ZelluSim.CellField
             }
         }
 
+        public IGenericCellField2D<T> ResizedClone(int cellsX, int cellsY)
+        {
+            if (CloningPolicy == CloningPolicy.TRY_DEEP_CLONE)
+                return new SimpleCellField2D<T>(cellsX, cellsY, this, true);
+            else if (CloningPolicy == CloningPolicy.DO_NOT_TRY_DEEP_CLONE)
+                return new SimpleCellField2D<T>(cellsX, cellsY, this, false);
+            else if (CloningPolicy == CloningPolicy.USE_DEFAULT)
+                return new SimpleCellField2D<T>(cellsX, cellsY, this);
+            throw new ArgumentException($"unknown cloning policy: {CloningPolicy}");
+        }
+
         public SimpleCellField2D<T> Clone()
         {
             if (CloningPolicy == CloningPolicy.TRY_DEEP_CLONE)

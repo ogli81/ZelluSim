@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define GenericRingBuffer3D_4th_ctor_SIMPLE
+using System;
 using System.Collections;
 using ZelluSim.CellField;
 using ZelluSim.Misc;
@@ -73,6 +74,10 @@ namespace ZelluSim.RingBuffer
                 (IGenericCellField2D<T>)other.templateWithDefault.Clone());
         }
 
+#if GenericRingBuffer3D_4th_ctor_SIMPLE
+        //TODO: use 3rd c'tor variant
+        //TODO: ringBuffer[i] = ringBuffer[i].ResizedClone(template.CellsX, template.CellsY, tryDeepClone);
+#else
         /// <summary>
         /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
         /// Tries to grab as much data from the other instance as possible.
@@ -171,7 +176,7 @@ namespace ZelluSim.RingBuffer
                 lastPos = ithis;
             }
         }
-
+#endif
 
         //helper methods:
 

@@ -71,33 +71,18 @@ namespace ZelluSim.RingBuffer
 
             AcceptTemplates((IGenericCellField2D<T>)other.template.Clone(), 
                 (IGenericCellField2D<T>)other.templateWithDefault.Clone());
+
+            base.CloneCopyFromOther(mem, other, startHere, true, copyUnusedElements);
         }
 
-//#if READABILITY
-//idea: develop fourth c'tor variant in a more readable way
-//TODO: use 3rd c'tor variant
-//TODO: ringBuffer[i] = ringBuffer[i].ResizedClone(template.CellsX, template.CellsY, tryDeepClone);
-//#else
-//( we could cut and paste the fourth c'tor variant's code here )
-// the fourth c'tor variant currently mimic
-//#endif
-
-        /// <summary>
-        /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
-        /// Tries to grab as much data from the other instance as possible.
-        /// </summary>
-        /// <param name="mem">number of memory slots in the ring buffer (1st dimension)</param>
-        /// <param name="template">we will create clones of this template</param>
-        /// <param name="other">the other instance</param>
-        /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
-        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
-        public GenericRingBuffer3D(int mem, IGenericCellField2D<T> template, GenericRingBuffer3D<T> other,
+        //fifth variant: change x/y, but keep mem as it is
+        public GenericRingBuffer3D(IGenericCellField2D<T> template, GenericRingBuffer3D<T> other,
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
-            bool copyUnusedElements = false) : this(mem, other, startHere, copyUnusedElements)
+            bool copyUnusedElements = false) : this(other.MemSlots, template, other, startHere, copyUnusedElements)
         {
-            CellsX = template.CellsX;
+
         }
-#else
+
         /// <summary>
         /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
         /// Tries to grab as much data from the other instance as possible.
@@ -196,7 +181,7 @@ namespace ZelluSim.RingBuffer
                 lastPos = ithis;
             }
         }
-#endif
+
 
         //helper methods:
 

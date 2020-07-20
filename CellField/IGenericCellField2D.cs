@@ -107,6 +107,7 @@ namespace ZelluSim.CellField
         /// <param name="toThisY">to where (y-coordinate) should we copy/clone</param>
         void CloneFromOther(IGenericCellField2D<T> other, int fromOtherX, int fromOtherY, int toThisX, int toThisY);
 
-        IGenericCellField2D<T> ResizedClone(int cellsX, int cellsY);
+
+        void CloneFromRegion(IGenericCellField2D<T> source, (int x, int y) srcUpperLeft, (int width, int height) dimension, (int x, int y) dstUpperLeft);
     }
 }

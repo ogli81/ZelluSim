@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+﻿using ZelluSim.Misc;
 
 namespace ZelluSim.SimulationTypes
 {

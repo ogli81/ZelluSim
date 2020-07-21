@@ -14,11 +14,6 @@ namespace ZelluSim.RingBuffer
     /// </typeparam>
     public class GenericRingBuffer3D<T> : AbstractRingBuffer3D<IGenericCellField2D<T>> //: AbstractRingBuffer3D
     {
-        //constants:
-
-        private static (int x, int y) UPPER_LEFT = (0, 0);
-
-
         //state:
 
         protected IGenericCellField2D<T> template;
@@ -187,11 +182,21 @@ namespace ZelluSim.RingBuffer
 
         protected override void MakeEntry(int where, bool clearWithDefault)
         {
+            //TODO: which way is faster?
+
             if (clearWithDefault || ringBuffer[where] == null)
                 ringBuffer[where] = CreateCellField2D(clearWithDefault);
+            //this way also puts a bit more pressure on the GC
+
+            //if (ringBuffer[where] == null)
+            //    ringBuffer[where] = CreateCellField2D(clearWithDefault);
+            //else
+            //    if (clearWithDefault)
+            //        ringBuffer[where].ClearAllWithDefault();
+            ////this way also needs time to clear all cells (overwrite with default)
         }
 
-        //TODO: pull up to base class, make base interface for IGenericCellField2D and IBinaryCellField2D
+        //TODO: pull up to base class, use ICellField2D
         /// <summary>
         /// Will throw an exception if any of these values violate our rules. 
         /// The rules are as follows: <br></br>

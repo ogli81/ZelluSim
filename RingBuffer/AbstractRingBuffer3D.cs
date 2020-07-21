@@ -11,6 +11,11 @@ namespace ZelluSim.RingBuffer
     /// </summary>
     public abstract class AbstractRingBuffer3D<T> : GenericRingBuffer1D<T> // : AbstractRingBuffer
     {
+        //constants:
+
+        protected static (int x, int y) UPPER_LEFT = (0, 0);
+
+
         //state:
 
         //-

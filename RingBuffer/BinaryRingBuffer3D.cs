@@ -40,17 +40,17 @@ namespace ZelluSim.RingBuffer
 
             //earlier idea: reserve memory now for the entire ring buffer
             //current idea: reserve memory as soon as it is needed
-            //idea: have one large BitArray, reserve memory for the entire buffer 
-            //we might want to implement that idea (and do a performance test)
         }
 
         /// <summary>
         /// Make a new instance, copy from other instance (copy c'tor A, second c'tor variant). 
-        /// Makes a copy of the other ring buffer (but only copies useful data, to safe time).
+        /// Makes a copy of the other ring buffer If you are recycling unused elements, you might be 
+        /// interested in setting the second param to true.
         /// </summary>
         /// <param name="other">the other instance</param>
-        /// <param name="tryDeepCopy">if the values are references that implement ICloneable then set this to true</param>
-        public BinaryRingBuffer3D(BinaryRingBuffer3D other) : base(other, true)
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
+        public BinaryRingBuffer3D(BinaryRingBuffer3D other,
+            bool copyUnusedElements = false) : base(other, true, copyUnusedElements)
         {
             //no safety check needed, since the other must have undergone that check
 
@@ -65,107 +65,90 @@ namespace ZelluSim.RingBuffer
         /// <param name="mem">number of memory slots in the ring buffer (1st dimension)</param>
         /// <param name="other">the other instance</param>
         /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public BinaryRingBuffer3D(int mem, BinaryRingBuffer3D other,
-            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST) : base(mem, other, startHere, true)
+            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
+            bool copyUnusedElements = false) : this(mem, other.template, other, startHere, copyUnusedElements)
         {
-            //no safety check needed, since the other must have undergone that check
 
-            AcceptTemplates((IBinaryCellField2D)other.template.Clone(),
-                (IBinaryCellField2D)other.templateWithDefault.Clone());
         }
 
         /// <summary>
         /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
         /// Tries to grab as much data from the other instance as possible.
         /// </summary>
+        /// <param name="template">we will create clones of this template</param>
+        /// <param name="other">the other instance</param>
+        /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
+        public BinaryRingBuffer3D(IBinaryCellField2D template, BinaryRingBuffer3D other,
+            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
+            bool copyUnusedElements = false) : this(other.MemSlots, template, other, startHere, copyUnusedElements)
+        {
+
+        }
+
+        /// <summary>
+        /// Make a new instance, copy from other instance (copy c'tor D, fifth c'tor variant). 
+        /// Tries to grab as much data from the other instance as possible.
+        /// </summary>
         /// <param name="mem">number of memory slots in the ring buffer (1st dimension)</param>
         /// <param name="template">we will create clones of this template</param>
         /// <param name="other">the other instance</param>
         /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public BinaryRingBuffer3D(int mem, IBinaryCellField2D template, BinaryRingBuffer3D other,
-            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST) : this(mem, template)
+            RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
+            bool copyUnusedElements = false) : this(mem, template)
         {
+            if (other.Empty)
+            {
+                firstPos = other.firstPos;
+                lastPos = other.lastPos;
+                empty = true;
+
+                if (!copyUnusedElements)
+                    return;
+            }
+
             //we copy as many from the active entries from the other ring buffer as will fit into this new ring buffer
             //start at the desired end, until mem is full
+
+            int iMax = copyUnusedElements ? other.MemSlots : other.Length;
+
             //use top-left corner (0,0), work into x and y direction as far as we can
             //if this new ringbuffer is bigger than the other: fill with 'default value'
 
-            if (other.Empty)
+            int xBound = Math.Min(CellsX, other.CellsX);
+            int yBound = Math.Min(CellsY, other.CellsY);
+
+            //this code can also be found in a base class (with some slight modifications)
+            //I tried to have it all in one place, but the resulting code was too ugly
+
+            int add;
+            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost (down)
+                add = -1;
+            else //go from leftmost to rightmost (up)
+                add = +1;
+
+            int iother = (add == -1) ? other.lastPos : other.firstPos;
+            int ithis = (add == -1) ? MemSlots - 1 : 0;
+            int ithisEnd = (add == -1) ? 0 : MemSlots - 1;
+            int iotherWrap = (add == -1) ? -1 : other.MemSlots;
+            if (add == -1) lastPos = ithis; else firstPos = ithis;
+            for (int i = 0; i < iMax; i++)
             {
-                return;
+                CloneCopyEntry(ithis, iother, other, xBound, yBound);
+
+                if (ithis == ithisEnd)
+                    break;
+                ithis += add;
+
+                iother += add;
+                if (iother == iotherWrap)
+                    iother = other.MemSlots - 1;
             }
-
-            int x = CellsX;
-            int y = CellsY;
-            int ox = other.CellsX;
-            int oy = other.CellsY;
-
-            ?;//TODO: make it like in GenericRingBuffer1D
-
-            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST)
-            {
-                int iother = other.lastPos;
-                int ithis = MemSlots - 1;
-                lastPos = ithis;
-                do
-                {
-                    IBinaryCellField2D oarr = other.ringBuffer[iother];
-                    if (oarr == null)
-                    {
-                        ringBuffer[ithis] = null;
-                    }
-                    else
-                    {
-                        MakeEntry(ithis, true);
-                        IBinaryCellField2D arr = ringBuffer[ithis];
-                        for (int a = 0; a < x && a < ox; a++)
-                            for (int b = 0; b < y && b < oy; b++)
-                                arr[a, b] = oarr[a, b];
-                    }
-
-                    if (ithis == 0)
-                        break;
-                    ithis--;
-
-                    iother--;
-                    if (iother < 0)
-                        iother = other.MemSlots - 1;
-                }
-                while (iother != other.firstPos);
-                firstPos = ithis;
-            }
-            else
-            {
-                int iother = other.firstPos;
-                int ithis = 0;
-                firstPos = ithis;
-                do
-                {
-                    IBinaryCellField2D oarr = other.ringBuffer[iother];
-                    if (oarr == null)
-                    {
-                        ringBuffer[ithis] = null;
-                    }
-                    else
-                    {
-                        MakeEntry(ithis, true);
-                        IBinaryCellField2D arr = ringBuffer[ithis];
-                        for (int a = 0; a < x && a < ox; a++)
-                            for (int b = 0; b < y && b < oy; b++)
-                                arr[a, b] = oarr[a, b];
-                    }
-
-                    if (ithis == MemSlots - 1)
-                        break;
-                    ithis++;
-
-                    iother++;
-                    if (iother == other.MemSlots)
-                        iother = 0;
-                }
-                while (iother != other.lastPos);
-                lastPos = ithis;
-            }
+            if (add == -1) firstPos = ithis; else lastPos = ithis;
         }
 
 
@@ -178,13 +161,43 @@ namespace ZelluSim.RingBuffer
             this.templateWithDefault = templateWithDefault;
         }
 
-        protected override void MakeEntry(int where, bool clearWithDefault)
+        private void CloneCopyEntry(int ithis, int iother, BinaryRingBuffer3D other, int xBound, int yBound)
         {
-            if (clearWithDefault || ringBuffer[where] == null)
-                ringBuffer[where] = CreateCellField2D(clearWithDefault);
+            IBinaryCellField2D oarr = other.ringBuffer[iother];
+            if (oarr == null)
+            {
+                ringBuffer[ithis] = null;
+            }
+            else
+            {
+                MakeEntry(ithis, true);
+                IBinaryCellField2D arr = ringBuffer[ithis];
+
+                //for (int a = 0; a < xBound; a++)
+                //    for (int b = 0; b < yBound; b++)
+                //        arr.CopyFromOther(oarr, a, b, a, b);
+                arr.CopyFromRegion(oarr, UPPER_LEFT, (xBound, yBound), UPPER_LEFT);
+                //TODO: which of these two ways is faster?
+            }
         }
 
-        //TODO: pull up to base class, make base interface for IGenericCellField2D and IBinaryCellField2D
+        protected override void MakeEntry(int where, bool clearWithDefault)
+        {
+            //TODO: which way is faster?
+
+            if (clearWithDefault || ringBuffer[where] == null)
+                ringBuffer[where] = CreateCellField2D(clearWithDefault);
+            //this way also puts a bit more pressure on the GC
+
+            //if (ringBuffer[where] == null)
+            //    ringBuffer[where] = CreateCellField2D(clearWithDefault);
+            //else
+            //    if (clearWithDefault)
+            //    ringBuffer[where].ClearAllWithDefault();
+            ////this way also needs time to clear all cells (overwrite with default)
+        }
+
+        //TODO: pull up to base class, use ICellField2D
         /// <summary>
         /// Will throw an exception if any of these values violate our rules. 
         /// The rules are as follows: <br></br>

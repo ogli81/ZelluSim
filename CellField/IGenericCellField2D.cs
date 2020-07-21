@@ -62,6 +62,7 @@ namespace ZelluSim.CellField
         /// <param name="tryDeepCopy">if your value implements ICloneable, you may want to set this parameter to true</param>
         void SetAllCells(T value, bool tryDeepCopy = false);
 
+        //
         void SetAllNulls(T value, bool tryDeepCopy = false);
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace ZelluSim.CellField
         /// <param name="toThisY">to where (y-coordinate) should we copy/clone</param>
         void CloneFromOther(IGenericCellField2D<T> other, int fromOtherX, int fromOtherY, int toThisX, int toThisY);
 
-
+        //TODO
         void CloneFromRegion(IGenericCellField2D<T> source, (int x, int y) srcUpperLeft, (int width, int height) dimension, (int x, int y) dstUpperLeft);
     }
 }

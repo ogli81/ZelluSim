@@ -95,5 +95,8 @@ namespace ZelluSim.CellField
         /// <param name="toThisX">to where (x-coordinate) should we copy the bit</param>
         /// <param name="toThisY">to where (y-coordinate) should we copy the bit</param>
         void CopyFromOther(IBinaryCellField2D other, int fromOtherX, int fromOtherY, int toThisX, int toThisY);
+        
+        //TODO
+        void CopyFromRegion(IBinaryCellField2D source, (int x, int y) srcUpperLeft, (int width, int height) dimension, (int x, int y) dstUpperLeft);
     }
 }

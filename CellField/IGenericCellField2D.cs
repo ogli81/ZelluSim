@@ -62,6 +62,8 @@ namespace ZelluSim.CellField
         /// <param name="tryDeepCopy">if your value implements ICloneable, you may want to set this parameter to true</param>
         void SetAllCells(T value, bool tryDeepCopy = false);
 
+        void SetAllNulls(T value, bool tryDeepCopy = false);
+
         /// <summary>
         /// Try to get or set the cell value via a (2-dimensional) indexer. 
         /// The attempt may fail when x or y is out of bounds (an exception will be thrown).

@@ -77,46 +77,30 @@ namespace ZelluSim.RingBuffer
 
             int iMax = copyUnusedElements ? other.MemSlots : other.Length;
 
-            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost
+            int add;
+            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost (down)
+                add = -1;
+            else //go from leftmost to rightmost (up)
+                add = +1;
+
+            int iother = (add == -1) ? other.lastPos : other.firstPos;
+            int ithis = (add == -1) ? MemSlots - 1 : 0;
+            int ithisEnd = (add == -1) ? 0 : MemSlots - 1;
+            int iotherWrap = (add == -1) ? -1 : other.MemSlots;
+            if (add == -1) lastPos = ithis; else firstPos = ithis;
+            for (int i = 0; i < iMax; i++)
             {
-                int iother = other.lastPos;
-                int ithis = MemSlots - 1;
-                int ithisEnd = 0;
-                lastPos = ithis;
-                for (int i = 0; i < iMax; i++)
-                {
-                    CloneCopyEntry(ithis, iother, other, tryDeepCopy);
+                CloneCopyEntry(ithis, iother, other, tryDeepCopy);
 
-                    if (ithis == ithisEnd)
-                        break;
-                    ithis--;
+                if (ithis == ithisEnd)
+                    break;
+                ithis += add;
 
-                    iother--;
-                    if (iother < 0)
-                        iother = other.MemSlots - 1;
-                }
-                firstPos = ithis;
+                iother += add;
+                if (iother == iotherWrap)
+                    iother = other.MemSlots - 1;
             }
-            else //go from leftmost to rightmost
-            {
-                int iother = other.firstPos;
-                int ithis = 0;
-                int ithisEnd = MemSlots - 1;
-                firstPos = ithis;
-                for (int i = 0; i < iMax; i++)
-                {
-                    CloneCopyEntry(ithis, iother, other, tryDeepCopy);
-
-                    if (ithis == ithisEnd)
-                        break;
-                    ithis++;
-
-                    iother++;
-                    if (iother >= other.MemSlots)
-                        iother = 0;
-                }
-                lastPos = ithis;
-            }
+            if (add == -1) firstPos = ithis; else lastPos = ithis;
         }
 
 

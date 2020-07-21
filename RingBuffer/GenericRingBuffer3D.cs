@@ -47,7 +47,8 @@ namespace ZelluSim.RingBuffer
 
         /// <summary>
         /// Make a new instance, copy from other instance (copy c'tor A, second c'tor variant). 
-        /// Makes a copy of the other ring buffer (but only copies useful data, to safe time).
+        /// Makes a copy of the other ring buffer. If you are recycling unused elements, you might be 
+        /// interested in setting the second param to true.
         /// </summary>
         /// <param name="other">the other instance</param>
         /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
@@ -75,7 +76,14 @@ namespace ZelluSim.RingBuffer
 
         }
 
-        //fifth variant: change x/y, but keep mem as it is
+        /// <summary>
+        /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
+        /// Tries to grab as much data from the other instance as possible.
+        /// </summary>
+        /// <param name="template">we will create clones of this template</param>
+        /// <param name="other">the other instance</param>
+        /// <param name="startHere">do we start copying at the "leftmost" or "rightmost" end?</param>
+        /// <param name="copyUnusedElements">if you are recycling old elements, set this parameter to true</param>
         public GenericRingBuffer3D(IGenericCellField2D<T> template, GenericRingBuffer3D<T> other,
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
             bool copyUnusedElements = false) : this(other.MemSlots, template, other, startHere, copyUnusedElements)
@@ -84,7 +92,7 @@ namespace ZelluSim.RingBuffer
         }
 
         /// <summary>
-        /// Make a new instance, copy from other instance (copy c'tor C, fourth c'tor variant). 
+        /// Make a new instance, copy from other instance (copy c'tor D, fifth c'tor variant). 
         /// Tries to grab as much data from the other instance as possible.
         /// </summary>
         /// <param name="mem">number of memory slots in the ring buffer (1st dimension)</param>
@@ -96,11 +104,6 @@ namespace ZelluSim.RingBuffer
             RingBufferEnd startHere = RingBufferEnd.RIGHTMOST_LAST_NEWEST,
             bool copyUnusedElements = false) : this(mem, template)
         {
-            //we copy as many from the active entries from the other ring buffer as will fit into this new ring buffer
-            //start at the desired end, until mem is full
-            //use top-left corner (0,0), work into x and y direction as far as we can
-            //if this new ringbuffer is bigger than the other: fill with 'default value'
-
             if (other.Empty)
             {
                 firstPos = other.firstPos;
@@ -111,54 +114,44 @@ namespace ZelluSim.RingBuffer
                     return;
             }
 
-            int x = CellsX;
-            int y = CellsY;
-            int ox = other.CellsX;
-            int oy = other.CellsY;
-            int xBound = Math.Min(x, ox);
-            int yBound = Math.Min(y, oy);
+            //we copy as many from the active entries from the other ring buffer as will fit into this new ring buffer
+            //start at the desired end, until mem is full
 
-            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST)
+            int iMax = copyUnusedElements ? other.MemSlots : other.Length;
+
+            //use top-left corner (0,0), work into x and y direction as far as we can
+            //if this new ringbuffer is bigger than the other: fill with 'default value'
+
+            int xBound = Math.Min(CellsX, other.CellsX);
+            int yBound = Math.Min(CellsY, other.CellsY);
+
+            //this code can also be found in a base class (with some slight modifications)
+            //I tried to have it all in one place, but the resulting code was too ugly
+
+            int add;
+            if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost (down)
+                add = -1;
+            else //go from leftmost to rightmost (up)
+                add = +1;
+
+            int iother = (add == -1) ? other.lastPos : other.firstPos;
+            int ithis = (add == -1) ? MemSlots - 1 : 0;
+            int ithisEnd = (add == -1) ? 0 : MemSlots - 1;
+            int iotherWrap = (add == -1) ? -1 : other.MemSlots;
+            if (add == -1) lastPos = ithis; else firstPos = ithis;
+            for (int i = 0; i < iMax; i++)
             {
-                int iother = other.lastPos;
-                int ithis = MemSlots - 1;
-                lastPos = ithis;
-                ?;//TODO: make it like in GenericRingBuffer1D
-                do
-                {
-                    CloneCopyEntry(ithis, iother, other, xBound, yBound);
+                CloneCopyEntry(ithis, iother, other, xBound, yBound);
 
-                    if (ithis == 0)
-                        break;
-                    ithis--;
+                if (ithis == ithisEnd)
+                    break;
+                ithis += add;
 
-                    iother--;
-                    if (iother == -1)
-                        iother = other.MemSlots - 1;
-                }
-                while (iother != other.firstPos);
-                firstPos = ithis;
+                iother += add;
+                if (iother == iotherWrap)
+                    iother = other.MemSlots - 1;
             }
-            else
-            {
-                int iother = other.firstPos;
-                int ithis = 0;
-                firstPos = ithis;
-                do
-                {
-                    CloneCopyEntry(ithis, iother, other, xBound, yBound);
-
-                    if (ithis == MemSlots - 1)
-                        break;
-                    ithis++;
-
-                    iother++;
-                    if (iother == other.MemSlots)
-                        iother = 0;
-                }
-                while (iother != other.lastPos);
-                lastPos = ithis;
-            }
+            if (add == -1) firstPos = ithis; else lastPos = ithis;
         }
 
 
@@ -188,6 +181,7 @@ namespace ZelluSim.RingBuffer
                 //    for (int b = 0; b < yBound; b++)
                 //        arr.CloneFromOther(oarr, a, b, a, b);
                 arr.CloneFromRegion(oarr, UPPER_LEFT, (xBound, yBound), UPPER_LEFT);
+                //TODO: which of these two ways is faster?
             }
         }
 

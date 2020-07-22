@@ -153,7 +153,25 @@ namespace ZelluSim.CellField
                     for (int j = 0; j < CellsY; j++)
                         Cells[i, j].Value = value;
             }
+        }
 
+        public override void SetAllNulls(T value, bool tryDeepCopy = false)
+        {
+            if (tryDeepCopy && value is ICloneable)
+            {
+                ICloneable cloneable = (ICloneable)value;
+                for (int i = 0; i < CellsX; i++)
+                    for (int j = 0; j < CellsY; j++)
+                        if(Cells[i, j].Value == null)
+                            Cells[i, j].Value = (T)cloneable.Clone();
+            }
+            else
+            {
+                for (int i = 0; i < CellsX; i++)
+                    for (int j = 0; j < CellsY; j++)
+                        if(Cells[i, j].Value == null)
+                            Cells[i, j].Value = value;
+            }
         }
 
         public MeshedCellField2D<T> Clone()

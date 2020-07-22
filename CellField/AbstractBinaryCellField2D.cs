@@ -89,5 +89,33 @@ namespace ZelluSim.CellField
         {
             this[toThisX, toThisY] = other[fromOtherX, fromOtherY];
         }
+
+        /// <inheritdoc/>
+        public void CopyFromRegion(IBinaryCellField2D source, (int width, int height) dimension,
+                    (int x, int y) srcUpperLeft, (int x, int y) dstUpperLeft, IBinaryCellField2D selfCopyBuffer = null)
+        {
+            if (source == this && Geom.OverlapsIn2D(srcUpperLeft, dstUpperLeft, dimension))
+            {
+                if (selfCopyBuffer == null || selfCopyBuffer.CellsX < dimension.width || selfCopyBuffer.CellsY < dimension.height)
+                    selfCopyBuffer = new BoolArrayCellField2D(dimension.width, dimension.height);
+                    //we could also tell the user that the copy buffer is not wide/high enough via ArgumentException
+                (int x, int y) newUpperLeft = (0, 0);
+                selfCopyBuffer.CopyFromRegion(source, dimension, srcUpperLeft, newUpperLeft);
+                source = selfCopyBuffer;
+                srcUpperLeft = newUpperLeft;
+            }
+            for (int x = 0; x < dimension.width; x++)
+                for (int y = 0; y < dimension.height; y++)
+                    this[srcUpperLeft.x + x, srcUpperLeft.y + y] = source[dstUpperLeft.x + x, dstUpperLeft.y + y];
+        }
+
+        /// <inheritdoc/>
+        public void CopyFromRegion(IBinaryCellField2D source, (int width, int height) dimension)
+        {
+            if (this == source) //this would be nonesense and we ignore it silently (or would an ArgumentException be better?)
+                return;
+
+            CopyFromRegion(source, dimension, (0, 0), (0, 0), null);
+        }
     }
 }

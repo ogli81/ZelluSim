@@ -42,7 +42,10 @@ namespace ZelluSim.CellField
         public abstract void SetAllCells(T value, bool tryDeepCopy = false);
 
         /// <inheritdoc/>
-        public T this[int x, int y]
+        public abstract void SetAllNulls(T value, bool tryDeepCopy = false);
+
+        /// <inheritdoc/>
+        public virtual T this[int x, int y]
         {
             get => GetCellValue(x, y);
             set => SetCellValue(x, y, value);
@@ -149,6 +152,35 @@ namespace ZelluSim.CellField
                     CloneFromOther(other, fromOtherX, fromOtherY, toThisX, toThisY);
                     return;
             }
+        }
+
+        /// <inheritdoc/>
+        public virtual void CloneFromRegion(IGenericCellField2D<T> source, (int width, int height) dimension,
+            (int x, int y) srcUpperLeft, (int x, int y) dstUpperLeft, IGenericCellField2D<T> selfCopyBuffer = null)
+        {
+            if (source == this && Geom.OverlapsIn2D(srcUpperLeft, dstUpperLeft, dimension))
+            {
+                if(selfCopyBuffer == null || selfCopyBuffer.CellsX < dimension.width || selfCopyBuffer.CellsY < dimension.height)
+                    selfCopyBuffer = new SimpleCellField2D<T>(dimension.width, dimension.height);
+                    //we could also tell the user that the copy buffer is not wide/high enough via ArgumentException
+                selfCopyBuffer.CloningPolicy = source.CloningPolicy;
+                (int x, int y) newUpperLeft = (0, 0);
+                selfCopyBuffer.CloneFromRegion(source, dimension, srcUpperLeft, newUpperLeft);
+                source = selfCopyBuffer;
+                srcUpperLeft = newUpperLeft;
+            }
+            for (int x = 0; x < dimension.width; x++)
+                for (int y = 0; y < dimension.height; y++)
+                    this[srcUpperLeft.x + x, srcUpperLeft.y + y] = source[dstUpperLeft.x + x, dstUpperLeft.y + y];
+        }
+
+        /// <inheritdoc/>
+        public virtual void CloneFromRegion(IGenericCellField2D<T> source, (int width, int height) dimension)
+        {
+            if (this == source) //this would be nonesense and we ignore it silently (or would an ArgumentException be better?)
+                return;
+
+            CloneFromRegion(source, dimension, (0, 0), (0, 0), null);
         }
     }
 }

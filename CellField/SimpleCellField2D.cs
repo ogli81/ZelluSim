@@ -135,6 +135,25 @@ namespace ZelluSim.CellField
             }
         }
 
+        public override void SetAllNulls(T value, bool tryDeepCopy = false)
+        {
+            if (tryDeepCopy && value is ICloneable)
+            {
+                ICloneable cloneable = (ICloneable)value;
+                for (int i = 0; i < CellsX; i++)
+                    for (int j = 0; j < CellsY; j++)
+                        if(Cells[i, j] == null)
+                            Cells[i, j] = (T)cloneable.Clone();
+            }
+            else
+            {
+                for (int i = 0; i < CellsX; i++)
+                    for (int j = 0; j < CellsY; j++)
+                        if(Cells[i, j] == null)
+                            Cells[i, j] = value;
+            }
+        }
+
         public IGenericCellField2D<T> ResizedClone(int cellsX, int cellsY)
         {
             if (CloningPolicy == CloningPolicy.TRY_DEEP_CLONE)

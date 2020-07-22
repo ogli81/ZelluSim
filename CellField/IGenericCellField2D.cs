@@ -62,7 +62,11 @@ namespace ZelluSim.CellField
         /// <param name="tryDeepCopy">if your value implements ICloneable, you may want to set this parameter to true</param>
         void SetAllCells(T value, bool tryDeepCopy = false);
 
-        //
+        /// <summary>
+        /// Set the content of all cells that do contain 'null' to a specific value.
+        /// </summary>
+        /// <param name="value">the value that you want to set for all cells</param>
+        /// <param name="tryDeepCopy">if your value implements ICloneable, you may want to set this parameter to true</param>
         void SetAllNulls(T value, bool tryDeepCopy = false);
 
         /// <summary>
@@ -110,7 +114,30 @@ namespace ZelluSim.CellField
         /// <param name="toThisY">to where (y-coordinate) should we copy/clone</param>
         void CloneFromOther(IGenericCellField2D<T> other, int fromOtherX, int fromOtherY, int toThisX, int toThisY);
 
-        //TODO
-        void CloneFromRegion(IGenericCellField2D<T> source, (int x, int y) srcUpperLeft, (int width, int height) dimension, (int x, int y) dstUpperLeft);
+        /// <summary>
+        /// Copy all binary that are inside a rectangular region from a specific source 
+        /// to a rectangular region of the same size to a specific destination. 
+        /// The implementation should contain a code path for the special situation where 
+        /// the 'source' instance is the same as 'this' instance), so that you can copy
+        /// values inside the same instance ("self-overwriting copies").
+        /// <br></br>NOTE: The x/y boundaries won't be checked (violating the bounds may lead to unexpected behavior).
+        /// </summary>
+        /// <param name="source">the instance from which do we want to copy the bits</param>
+        /// <param name="dimension">the dimension (width/height) of the rectangular region</param>
+        /// <param name="srcUpperLeft">the (x/y) coordinates of the upper left corner</param>
+        /// <param name="dstUpperLeft">the (x/y) coordinates of the upper left corner</param>
+        /// <param name="selfCopyBuffer">for self-overwriting copies you may specify a 'copy buffer'</param>
+        void CloneFromRegion(IGenericCellField2D<T> source, (int width, int height) dimension,
+            (int x, int y) srcUpperLeft, (int x, int y) dstUpperLeft, IGenericCellField2D<T> selfCopyBuffer = null);
+
+        /// <summary>
+        /// Copy all binary that are inside a rectangular region from a specific source 
+        /// to a rectangular region of the same size to a specific destination. 
+        /// <br></br>NOTE: The x/y boundaries won't be checked (violating the bounds may lead to unexpected behavior).
+        /// <br></br>NOTE: The upper left corner for both source and destination is at (x = 0, y = 0).
+        /// </summary>
+        /// <param name="source">the instance from which do we want to copy the bits</param>
+        /// <param name="dimension">the dimension (width/height) of the rectangular region</param>
+        void CloneFromRegion(IGenericCellField2D<T> source, (int width, int height) dimension);
     }
 }

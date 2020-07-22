@@ -95,8 +95,31 @@ namespace ZelluSim.CellField
         /// <param name="toThisX">to where (x-coordinate) should we copy the bit</param>
         /// <param name="toThisY">to where (y-coordinate) should we copy the bit</param>
         void CopyFromOther(IBinaryCellField2D other, int fromOtherX, int fromOtherY, int toThisX, int toThisY);
-        
-        //TODO
-        void CopyFromRegion(IBinaryCellField2D source, (int x, int y) srcUpperLeft, (int width, int height) dimension, (int x, int y) dstUpperLeft);
+
+        /// <summary>
+        /// Copy all binary that are inside a rectangular region from a specific source 
+        /// to a rectangular region of the same size to a specific destination. 
+        /// The implementation should contain a code path for the special situation where 
+        /// the 'source' instance is the same as 'this' instance), so that you can copy
+        /// values inside the same instance ("self-overwriting copies").
+        /// <br></br>NOTE: The x/y boundaries won't be checked (violating the bounds may lead to unexpected behavior).
+        /// </summary>
+        /// <param name="source">the instance from which do we want to copy the bits</param>
+        /// <param name="dimension">the dimension (width/height) of the rectangular region</param>
+        /// <param name="srcUpperLeft">the (x/y) coordinates of the upper left corner</param>
+        /// <param name="dstUpperLeft">the (x/y) coordinates of the upper left corner</param>
+        /// <param name="selfCopyBuffer">for self-overwriting copies you may specify a 'copy buffer'</param>
+        void CopyFromRegion(IBinaryCellField2D source, (int width, int height) dimension,
+            (int x, int y) srcUpperLeft, (int x, int y) dstUpperLeft, IBinaryCellField2D selfCopyBuffer = null);
+
+        /// <summary>
+        /// Copy all binary that are inside a rectangular region from a specific source 
+        /// to a rectangular region of the same size to a specific destination. 
+        /// <br></br>NOTE: The x/y boundaries won't be checked (violating the bounds may lead to unexpected behavior).
+        /// <br></br>NOTE: The upper left corner for both source and destination is at (x = 0, y = 0).
+        /// </summary>
+        /// <param name="source">the instance from which do we want to copy the bits</param>
+        /// <param name="dimension">the dimension (width/height) of the rectangular region</param>
+        void CopyFromRegion(IBinaryCellField2D source, (int width, int height) dimension);
     }
 }

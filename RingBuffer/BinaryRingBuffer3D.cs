@@ -176,7 +176,7 @@ namespace ZelluSim.RingBuffer
                 //for (int a = 0; a < xBound; a++)
                 //    for (int b = 0; b < yBound; b++)
                 //        arr.CopyFromOther(oarr, a, b, a, b);
-                arr.CopyFromRegion(oarr, UPPER_LEFT, (xBound, yBound), UPPER_LEFT);
+                arr.CopyFromRegion(oarr, (xBound, yBound));
                 //TODO: which of these two ways is faster?
             }
         }

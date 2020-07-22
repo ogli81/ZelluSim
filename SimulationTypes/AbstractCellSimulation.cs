@@ -8,7 +8,7 @@ using ZelluSim.Misc;
 
 namespace ZelluSim.SimulationTypes
 {
-    public abstract class AbstractCellSimulation : ICellSimulation
+    public abstract class AbstractCellSimulation<T> : ICellSimulation
     {
         //state:
 

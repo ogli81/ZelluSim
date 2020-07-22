@@ -171,7 +171,7 @@ namespace ZelluSim.CellField
             }
             for (int x = 0; x < dimension.width; x++)
                 for (int y = 0; y < dimension.height; y++)
-                    this[srcUpperLeft.x + x, srcUpperLeft.y + y] = source[dstUpperLeft.x + x, dstUpperLeft.y + y];
+                    CloneFromOther(source, srcUpperLeft.x + x, srcUpperLeft.y + y, dstUpperLeft.x + x, dstUpperLeft.y + y);
         }
 
         /// <inheritdoc/>

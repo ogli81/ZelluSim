@@ -196,7 +196,7 @@ namespace ZelluSim.RingBuffer
             ////this way also needs time to clear all cells (overwrite with default)
         }
 
-        //TODO: pull up to base class, use ICellField2D
+        //wanted to pull this up to base class, using ICellField2D, didn't find a good way to achieve this
         /// <summary>
         /// Will throw an exception if any of these values violate our rules. 
         /// The rules are as follows: <br></br>
@@ -208,13 +208,7 @@ namespace ZelluSim.RingBuffer
             if (template == null) throw new ArgumentNullException("The template can't be null!");
         }
 
-        //Array.Clear in parent class 'GenericRingBuffer1D' does the same as setting ringBuffer[pos] = null
-        //protected override void FreeBuffer(int pos)
-        //{
-        //    ringBuffer[pos] = null;
-        //}
-
-        //TODO: pull up to base class, make base interface for IGenericCellField2D and IBinaryCellField2D
+        //wanted to pull this up to base class, using ICellField2D, didn't find a good way to achieve this
         protected override void ValueCheck(IGenericCellField2D<T> newValue)
         {
             base.ValueCheck(newValue); //currently does nothing
@@ -225,6 +219,12 @@ namespace ZelluSim.RingBuffer
                 if (newValue.CellsY != CellsY) throw new ArgumentException($"cell field must match our CellsY value of {CellsY}!");
             }
         }
+
+        //Array.Clear in parent class 'GenericRingBuffer1D' does the same as setting ringBuffer[pos] = null
+        //protected override void FreeBuffer(int pos)
+        //{
+        //    ringBuffer[pos] = null;
+        //}
 
 
         //public methods:

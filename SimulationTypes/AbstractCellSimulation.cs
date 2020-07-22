@@ -13,7 +13,7 @@ namespace ZelluSim.SimulationTypes
         //state:
 
         protected int currentGen = 0;
-        protected AbstractRingBuffer3D aring;
+        protected AbstractRingBuffer3D<T> aring;
         public SimulationSettings Settings { get; }
         protected SimulationParameter? param1 = null;
         protected SimulationParameter? param2 = null;
@@ -41,13 +41,20 @@ namespace ZelluSim.SimulationTypes
             stats1 = settings.TrackLifeStats ? new List<decimal>() : null;
         }
         /// <summary>
-        /// Call this in the last line of your c'tor. When doing complex subclasses: 
+        /// Call this in the last line of your c'tor. When making subclasses of subclasses: 
         /// Overwrite this method with an empty body and make your own injection method.
         /// </summary>
         protected void InjectSettings() { Settings.Sim = this; }
 
 
         //helper methods:
+
+        /// <summary>
+        /// This is the core method of our simulation classes. 
+        /// Override this to implement the logic of your specific type of simulation.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract bool DoCalculateNextGen();
 
         protected bool DoCreateNewGeneration()
         {
@@ -68,11 +75,9 @@ namespace ZelluSim.SimulationTypes
             return true;
         }
 
-        protected abstract bool DoCalculateNextGen();
-
         protected virtual void DoResizeRingBuffer(int mem, int x, int y)
         {
-            AbstractRingBuffer3D.SafetyCheckNewRingBuffer(mem, x, y);
+            AbstractRingBuffer3D<T>.SafetyCheckNewRingBuffer(mem, x, y);
         }
 
         protected void LifeStatsEnsureCapacity()

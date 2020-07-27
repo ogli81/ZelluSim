@@ -1,7 +1,7 @@
 ﻿namespace ZelluSim.Misc
 {
     /// <summary>
-    /// How should the program react when memory is full?
+    /// How should the program react when the memory is full (and resizing to a bigger capacity is not allowed)?
     /// </summary>
     public enum MemFullBehavior
     {

@@ -26,10 +26,6 @@ namespace ZelluSim.SimulationTypes
         /// the c'tor of the simulation class.
         /// </summary>
         SimulationSettings Settings { get; }
-        /// <summary>
-        /// Calling this method informs the simulation that settings may have changed.
-        /// </summary>
-        void SettingsChanged();
 
         /// <summary>
         /// Get the id-number of the current "generation".
@@ -54,10 +50,6 @@ namespace ZelluSim.SimulationTypes
         /// If the simulation doesn't have a second parameter, null will be returned.
         /// </summary>
         SimulationParameter? Param2 { get; }
-        /// <summary>
-        /// Calling this method informs the simulation that parameters may have changed.
-        /// </summary>
-        void ParamsChanged();
 
         /// <summary>
         /// If tracking of life statistics is enabled, you can get the list of values which 

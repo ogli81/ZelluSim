@@ -14,6 +14,29 @@ namespace ZelluSim.SimulationTypes
     /// </summary>
     public struct SimulationParameter
     {
+        //state:
+
+        /// <summary>
+        /// A short(!) name, that will be displayed above a slider.
+        /// </summary>
+        public string Name { get; }
+        /// <summary>
+        /// A few words/sentences about the nature of this parameter.
+        /// </summary>
+        public string Info { get; }
+
+        private decimal min, max; //lower and upper bounds
+        private decimal current; //current value
+
+        /// <summary>
+        /// This event will be triggered, whenever you set a property on this SimulationParameter. 
+        /// The argument will always be empty (<see cref="EventArgs.Empty"/>).
+        /// </summary>
+        public event EventHandler ParamsChanged;
+
+
+        //c'tors:
+
         /// <summary>
         /// This is the first c'tor variant. It will use the interval [0..1] (minimum is 0.0m 
         /// and maximum is 1.0m).
@@ -30,10 +53,10 @@ namespace ZelluSim.SimulationTypes
         /// interval that defines the possible values. The current value of this parameter
         /// will be in the middle of the interval (at 50% so to say).
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="info"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
+        /// <param name="name">A short(!) name, that will be displayed above a slider.</param>
+        /// <param name="info">A few words/sentences about the nature of this parameter.</param>
+        /// <param name="min">The lower bound for allowed values.</param>
+        /// <param name="max">The upper bound for allowed values.</param>
         public SimulationParameter(string name, string info, decimal min, decimal max) : this(name, info, min, max, (max+min)*0.5m)
         {
 
@@ -42,11 +65,11 @@ namespace ZelluSim.SimulationTypes
         /// <summary>
         /// This is the third c'tor variant.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="info"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <param name="current"></param>
+        /// <param name="name">A short(!) name, that will be displayed above a slider.</param>
+        /// <param name="info">A few words/sentences about the nature of this parameter.</param>
+        /// <param name="min">The lower bound for allowed values.</param>
+        /// <param name="max">The upper bound for allowed values.</param>
+        /// <param name="current">The current value (must be inside lower/upper bounds).</param>
         public SimulationParameter(string name, string info, decimal min, decimal max, decimal current)
         {
             if (name == null)
@@ -62,28 +85,76 @@ namespace ZelluSim.SimulationTypes
 
             Name = name;
             Info = info;
-            Min = min;
-            Max = max;
-            curr = current;
+            
+            this.min = min;
+            this.max = max;
+            this.current = current;
+
+            ParamsChanged = null;
         }
 
-        public string Name { get; }
-        public string Info { get; }
 
-        public decimal Min { get; }
-        public decimal Max { get; }
+        //helper methods:
 
-        private decimal curr;
+        private void OnParamsChanged(EventArgs e)
+        {
+            //EventHandler handler = ParamsChanged;
+            //if (handler != null)
+            //    handler(this, e);
+            ParamsChanged?.Invoke(this, e);
+        }
+
+
+        //public methods:
+
+        /// <summary>
+        /// Get or set the lower bound (smallest legal value for the 'current' value).
+        /// </summary>
+        public decimal Min 
+        {
+            get => min;
+            set
+            {
+                if (value > max) 
+                    throw new ArgumentException("min must be smaller than max!");
+                min = value;
+                if (value > current)
+                    current = value;
+                OnParamsChanged(EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Get or set the upper bound (biggest legal value for the 'current' value).
+        /// </summary>
+        public decimal Max 
+        {
+            get => max;
+            set
+            {
+                if (value < min)
+                    throw new ArgumentException("min must be smaller than max!");
+                max = value;
+                if (value < current)
+                    current = value;
+                OnParamsChanged(EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Get or set the 'current' value (must be within min/max, lower/upper bounds).
+        /// </summary>
         public decimal Current 
         {
-            get => curr;
+            get => current;
             set
             {
                 if (value < Min) 
                     throw new ArgumentException("Current must be greater than or equal to Min!");
                 if (value > Max) 
                     throw new ArgumentException("Current musst be less than or equal to Max!");
-                curr = value;
+                current = value;
+                OnParamsChanged(EventArgs.Empty);
             }
         }
     }

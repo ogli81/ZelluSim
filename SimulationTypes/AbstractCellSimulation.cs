@@ -18,8 +18,8 @@ namespace ZelluSim.SimulationTypes
         //ringbuffer with N ("mem") slots, each slot contains a 2d field of cells
         protected AbstractRingBuffer3D<T> aring;
 
-        protected SimulationParameter? param1 = null;
-        protected SimulationParameter? param2 = null;
+        protected SimulationParameter param1 = null;
+        protected SimulationParameter param2 = null;
 
         public SimulationSettings Settings { get; protected set; }
         //protected SimulationSettings Old { get; protected set; } //the previously used settings (initially null)
@@ -47,6 +47,10 @@ namespace ZelluSim.SimulationTypes
         {
             Settings = settings;
         }
+
+
+        //helper methods:
+
         /// <summary>
         /// Call this in the last line of your c'tor. When making subclasses of subclasses: 
         /// Overwrite this method with an empty body and make your own injection method.
@@ -55,7 +59,7 @@ namespace ZelluSim.SimulationTypes
         {
             CreateRingBuffer();
             CreateParams();
-            CreateStats(); 
+            CreateStats();
             ConnectEvents();
         }
 
@@ -72,20 +76,16 @@ namespace ZelluSim.SimulationTypes
         {
             Settings.SettingsChanged += SettingsChanged;
             if (Param1 != null)
-                Param1.Value.ParamsChanged += ParamsChanged;
+                Param1.ParamsChanged += ParamsChanged;
             if (Param2 != null)
-                Param2.Value.ParamsChanged += ParamsChanged;
+                Param2.ParamsChanged += ParamsChanged;
         }
-
-
-        //helper methods:
 
         /// <summary>
         /// This is the core method of our simulation classes. 
         /// Override this to implement the logic of your specific type of simulation.
         /// </summary>
-        /// <returns></returns>
-        protected abstract bool DoCalculateNextGen();
+        protected abstract void DoCalculateNextGen();
 
         protected abstract void DoResizeRingBuffer(int mem, int x, int y);
 
@@ -193,10 +193,10 @@ namespace ZelluSim.SimulationTypes
 
         protected virtual void ParamsChanged(object sender, EventArgs e)
         {
-            if (sender == (object)Param1.Value)
+            if (sender == (object)Param1)
                 Param1Changed(sender, e);
             else
-            if (sender == (object)Param2.Value)
+            if (sender == (object)Param2)
                 Param2Changed(sender, e);
         }
 
@@ -264,8 +264,8 @@ namespace ZelluSim.SimulationTypes
             return true;
         }
 
-        public SimulationParameter? Param1 => param1;
+        public SimulationParameter Param1 => param1;
 
-        public SimulationParameter? Param2 => param2;
+        public SimulationParameter Param2 => param2;
     }
 }

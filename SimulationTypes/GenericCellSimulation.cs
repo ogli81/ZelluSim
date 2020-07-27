@@ -34,23 +34,30 @@ namespace ZelluSim.SimulationTypes
 
         //helper methods:
 
-        protected virtual IGenericCellField2D<C> CreateCellField()
+        protected virtual IGenericCellField2D<C> CreateCellField(int sizeX, int sizeY)
         {
             if (USE_MESHEDCELLS)
-                return new MeshedCellField2D<C>(Settings.SizeX, Settings.SizeY);
+                return new MeshedCellField2D<C>(sizeX, sizeY);
             else
-                return new SimpleCellField2D<C>(Settings.SizeX, Settings.SizeY);
+                return new SimpleCellField2D<C>(sizeX, sizeY);
         }
 
         protected override void CreateRingBuffer()
         {
-            ring = new GenericRingBuffer3D<C>(Settings.MemSlots, CreateCellField());
+            ring = new GenericRingBuffer3D<C>(Settings.MemSlots, CreateCellField(Settings.SizeX, Settings.SizeY));
             aring = ring;
         }
 
         protected override void DoResizeRingBuffer(int mem, int x, int y)
         {
-            ring = new GenericRingBuffer3D<C>(mem, CreateCellField(), ring);
+            if (ring.CellsX == x && ring.CellsY == y)
+            {
+                ring = new GenericRingBuffer3D<C>(mem, ring);
+            }
+            else
+            {
+                ring = new GenericRingBuffer3D<C>(mem, CreateCellField(x, y), ring);
+            }
             aring = ring;
         }
 

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
+using ZelluSim.CellField;
 
 namespace ZelluSim.SimulationTypes
 {
@@ -30,23 +25,77 @@ namespace ZelluSim.SimulationTypes
     /// </summary>
     public class ClassicSimulation : BinaryCellSimulation
     {
+        //state:
+
+        //-
+
+
+        //c'tors:
+
         public ClassicSimulation(SimulationSettings settings) : base(settings)
         {
-            InjectSettings();
+            Init();
         }
 
-        public override string Info => "The classic game of life simulation by John Horton Conway - simulates birth and death of a population of micro organisms.";
 
-        protected override bool DoCalculateNextGen()
+        //helper methods:
+
+        protected override void CreateParams()
+        {
+            param1 = new SimulationParameter("minimum survival", "min number of neighbors to survive, default: 2", 0, 8, 2);
+            param2 = new SimulationParameter("overpopulation", "min number of neighbors for overpopulation, default: 4", 1, 9, 4);
+        }
+
+        protected override void DoCalculateNextGen()
         {
             //hint: the new generation was already allocated in AbstractCellSimulation
-            BitArray prev = ring.Previous;
-            BitArray last = ring.Last;
+            IBinaryCellField2D last = ring.Last;
+            IBinaryCellField2D prev = ring.Previous;
 
+            int minSurv = (int)param1.Current;
+            int overPop = (int)param2.Current;
+            int neighbors;
+            bool wrap = Settings.IsWrap;
 
+            for (int x = 0; x < prev.CellsX; ++x)
+                for (int y = 0; y < prev.CellsY; ++y)
+                {
+                    GetNeighbors(prev, x, y, out neighbors, wrap);
+                    if (prev[x, y]) //is alive
+                    {
+                        if (neighbors < minSurv)
+                            last[x, y] = false; //die
+                        else
+                        if (neighbors >= overPop)
+                            last[x, y] = false; //die
+                        else
+                            last[x, y] = true; //stay alife
+                    }
+                    else //is dead
+                    {
+                        if (neighbors == 3)
+                            last[x, y] = true; //get born
+                        else
+                            last[x, y] = false; //stay dead
+                    }
+                }
         }
+
+        protected override void Param1Changed(object sender, EventArgs e)
+        {
+            if (param1.Current >= param2.Current)
+                param2.Current = param1.Current + 1;
+        }
+
+        protected override void Param2Changed(object sender, EventArgs e)
+        {
+            if (param2.Current <= param1.Current)
+                param1.Current = param2.Current - 1;
+        }
+
+
+        //public methods:
+
+        public override string Info => "The classic game of life simulation by John Horton Conway - simulates birth and death of a population of micro organisms.";
     }
-
-
-
 }

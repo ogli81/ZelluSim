@@ -12,7 +12,7 @@ namespace ZelluSim.SimulationTypes
     /// In our application, the user may change these parameters and observe how the 
     /// simulation behaves with different parameter values.
     /// </summary>
-    public struct SimulationParameter
+    public class SimulationParameter
     {
         //state:
 

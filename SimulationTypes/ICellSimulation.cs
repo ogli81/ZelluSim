@@ -44,12 +44,12 @@ namespace ZelluSim.SimulationTypes
         /// Each simulation may have up to 2 adjustable parameters - this is the first one. 
         /// If the simulation doesn't have a first parameter, null will be returned.
         /// </summary>
-        SimulationParameter? Param1 { get; }
+        SimulationParameter Param1 { get; }
         /// <summary>
         /// Each simulation may have up to 2 adjustable parameters - this is the second one. 
         /// If the simulation doesn't have a second parameter, null will be returned.
         /// </summary>
-        SimulationParameter? Param2 { get; }
+        SimulationParameter Param2 { get; }
 
         /// <summary>
         /// If tracking of life statistics is enabled, you can get the list of values which 

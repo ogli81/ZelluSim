@@ -14,7 +14,7 @@ namespace ZelluSim.SimulationTypes
     /// You can find the original rules for "Conway's Game of Life" at 
     /// several places (for example at Wikipedia). Our simulation allows 
     /// you to change the rules (see the two parameters below).
-    /// <list type="number">
+    /// <list type="bullet">
     /// <item>
     /// Param1: min number of neighbors to survive, default: 2
     /// </item>

@@ -41,7 +41,7 @@ namespace ZelluSim.SimulationTypes
                 return new BoolArrayCellField2D(Settings.SizeX, Settings.SizeY);
         }
 
-        protected virtual void AllocateRingBuffer()
+        protected override void CreateRingBuffer()
         {
             ring = new BinaryRingBuffer3D(Settings.MemSlots, CreateCellField());
             aring = ring;

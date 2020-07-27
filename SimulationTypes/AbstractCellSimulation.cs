@@ -55,18 +55,26 @@ namespace ZelluSim.SimulationTypes
         {
             CreateRingBuffer();
             CreateParams();
-            CreateStats(); //stats1 = settings.TrackLifeStats ? new List<decimal>() : null; //TODO
+            CreateStats(); 
             ConnectEvents();
         }
 
-        protected abstract void CreateRingBuffer();
-        protected abstract void CreateParams();
-        protected abstract void CreateStats();
+        protected abstract void CreateRingBuffer(); //see: BinaryCellSimulation  and  GenericCellSimulation
+        protected virtual void CreateParams()
+        {
+            //the params can be 'null'
+        }
+        protected virtual void CreateStats()
+        {
+            //stats1 = settings.TrackLifeStats ? new List<decimal>() : null; //TODO
+        }
         protected void ConnectEvents()
         {
             Settings.SettingsChanged += SettingsChanged;
-            Param1.Value.ParamsChanged += ParamsChanged;
-            Param2.Value.ParamsChanged += ParamsChanged;
+            if (Param1 != null)
+                Param1.Value.ParamsChanged += ParamsChanged;
+            if (Param2 != null)
+                Param2.Value.ParamsChanged += ParamsChanged;
         }
 
 
@@ -106,7 +114,7 @@ namespace ZelluSim.SimulationTypes
                 return false;
             if (Settings.MemSlotsGrow <= 1)
                 return false;
-            int newSize = (int)((decimal)aring.MemSlots * Settings.MemSlotsGrow);
+            int newSize = (int)(((decimal)aring.MemSlots) * Settings.MemSlotsGrow);
             newSize = Math.Min(newSize, Settings.MemSlotsMax);
             if (newSize == aring.MemSlots)
                 return false;
@@ -180,7 +188,7 @@ namespace ZelluSim.SimulationTypes
 
             //Settings.MemSlotsMax
             //Settings.LifeStatsMemMax
-            //(nothing to do - if lower than current values then next "must grow" will simply fail)
+            //(nothing to do - if lower than current values then next "must grow" attempt will simply fail)
         }
 
         protected virtual void ParamsChanged(object sender, EventArgs e)

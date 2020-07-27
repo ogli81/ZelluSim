@@ -42,9 +42,10 @@ namespace ZelluSim.SimulationTypes
                 return new SimpleCellField2D<C>(Settings.SizeX, Settings.SizeY);
         }
 
-        protected virtual void AllocateRingBuffer()
+        protected override void CreateRingBuffer()
         {
             ring = new GenericRingBuffer3D<C>(Settings.MemSlots, CreateCellField());
+            aring = ring;
         }
 
         protected override void DoResizeRingBuffer(int mem, int x, int y)

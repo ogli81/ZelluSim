@@ -24,6 +24,13 @@ namespace ZelluSim.SimulationTypes
     /// Param2: min number of neighbors for overpopulation, default: 4
     /// </item>
     /// </list>
+    /// HINT:
+    /// How is the randomness applied to th GoL-simulation? 
+    /// We could examine 6 random cells instead of 8 fixed cells. 
+    /// We could also vary the parameters (e.g. -1, +0 or +1) for each cell.
+    /// We could also vary the number of 3 cells needed for being born (e.g. 
+    /// 10% for "1 needed", 20% for "2 needed", 40% for "3 needed", 
+    /// 20% for "4 needed" and 10% for "1 needed").
     /// </summary>
     public class PrngSimulation // : ISimulation
     {

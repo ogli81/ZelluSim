@@ -6,21 +6,56 @@ using System.Threading.Tasks;
 
 namespace ZelluSim.SimulationTypes
 {
+    /// <summary>
+    /// A modified version of the life simulation by John Horton Conway - we use 5 different 
+    /// states: 0,1,2,3,4 (0 = fully dead, 4 = fully alife).
+    /// <list type="bullet">
+    /// <item>
+    /// Param1: min combined 'life' of neighbors to survive without damage, default: 8
+    /// </item>
+    /// <item>
+    /// Param2: min combined 'life' of neighbors where overpopulation starts (with 1 pt damage), default: 13
+    /// </item>
+    /// </list>
+    /// </summary>
     public class Fuzzy5Simulation : GenericCellSimulation<byte>
     {
+        //state:
+
+        //-
+
+
         //c'tors:
 
         public Fuzzy5Simulation(SimulationSettings settings) : base(settings)
         {
-            InjectSettings();
+            Init();
         }
 
 
         //helper methods:
 
-        protected override bool DoCalculateNextGen()
+        protected override void CreateParams()
         {
-            throw new NotImplementedException();
+            param1 = new SimulationParameter("minimum survival", "combined life value of neighbors needed to survive unharmed", 0, 36, 8);
+            param2 = new SimulationParameter("overpopulation", "combined life where overpopulation starts (with 1 pt damage)", 1, 37, 13);
+        }
+
+        protected override void DoCalculateNextGen()
+        {
+            throw new NotImplementedException(); //TODO
+        }
+
+        protected override void Param1Changed(object sender, EventArgs e)
+        {
+            if (param1.Current >= param2.Current)
+                param2.Current = param1.Current + 1;
+        }
+
+        protected override void Param2Changed(object sender, EventArgs e)
+        {
+            if (param2.Current <= param1.Current)
+                param1.Current = param2.Current - 1;
         }
 
 

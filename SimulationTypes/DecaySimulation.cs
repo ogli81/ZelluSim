@@ -109,6 +109,7 @@ namespace ZelluSim.SimulationTypes
             return n;
         }
 
+
         //public methods:
 
         public override string Info => "A decay simulation with variable decay rate. If a cell has neighbors, the decay is reduced or even stopped.";

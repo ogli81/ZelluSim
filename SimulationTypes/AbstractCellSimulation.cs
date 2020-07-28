@@ -212,6 +212,38 @@ namespace ZelluSim.SimulationTypes
             //example: param1's bounds must change because param2's bounds have changed
         }
 
+        protected decimal GetNeighborsSumWithWrap(int x, int y)
+        {
+            int yMax = aring.CellsY - 1;
+            int xMax = aring.CellsX - 1;
+            decimal v = 0;
+            v += GetCellValue(x, y == 0 ? yMax : y - 1); //N
+            v += GetCellValue(x == xMax ? 0 : x + 1, y == 0 ? yMax : y - 1); //NE
+            v += GetCellValue(x == xMax ? 0 : x + 1, y); //E
+            v += GetCellValue(x == xMax ? 0 : x + 1, y == yMax ? 0 : y + 1); //SE
+            v += GetCellValue(x, y == yMax ? 0 : y + 1); //S
+            v += GetCellValue(x == 0 ? xMax : x - 1, y == yMax ? 0 : y + 1); //SW
+            v += GetCellValue(x == 0 ? xMax : x - 1, y); //W
+            v += GetCellValue(x == 0 ? xMax : x - 1, y == 0 ? yMax : y - 1); //NW
+            return v;
+        }
+
+        protected decimal GetNeighborsSumWithoutWrap(int x, int y, decimal outsideVal)
+        {
+            int yMax = aring.CellsY - 1;
+            int xMax = aring.CellsX - 1;
+            decimal v = 0;
+            v += y == 0 ? outsideVal : GetCellValue(x, y - 1); //N
+            v += x == xMax || y == 0 ? outsideVal : GetCellValue(x + 1, y - 1); //NE
+            v += x == xMax ? outsideVal : GetCellValue(x + 1, y); //E
+            v += x == xMax || y == yMax ? outsideVal : GetCellValue(x + 1, y + 1); //SE
+            v += y == yMax ? outsideVal : GetCellValue(x, y + 1); //S
+            v += x == 0 || y == yMax ? outsideVal : GetCellValue(x - 1, y + 1); //SW
+            v += x == 0 ? outsideVal : GetCellValue(x - 1, y); //W
+            v += x == 0 || y == 0 ? outsideVal : GetCellValue(x - 1, y - 1); //NW
+            return v;
+        }
+
 
         //public methods:
 

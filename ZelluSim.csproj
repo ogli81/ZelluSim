@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageLicenseExpression>CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)</PackageLicenseExpression>
-    <PackageProjectUrl></PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/ogli81/ZelluSim</PackageProjectUrl>
     <Authors>https://github.com/ogli81</Authors>
     <PackageIcon>ZelluSim_256x256.ico</PackageIcon>
     <RepositoryUrl>https://github.com/ogli81/ZelluSim</RepositoryUrl>
@@ -13,6 +13,7 @@
     <FileVersion>0.1.0.0</FileVersion>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageReleaseNotes>Well, this is version "0.1". It's untested yet. Just need a first version for the UI project.</PackageReleaseNotes>
+    <Description>A C# library for cellular automatons. Currently 2D (and thus also 1D), but support for 3D-simulations is planned for future versions. There are a few built-in simulations as examples. This library contains the logic only - you need your own UI project which can present an interface (see projects ZelluSimFormz and ZelluSimConsolaz as examples).</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -2,10 +2,28 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageLicenseExpression>CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)</PackageLicenseExpression>
+    <PackageProjectUrl></PackageProjectUrl>
+    <Authors>https://github.com/ogli81</Authors>
+    <PackageIcon>ZelluSim_256x256.ico</PackageIcon>
+    <RepositoryUrl>https://github.com/ogli81/ZelluSim</RepositoryUrl>
+    <RepositoryType>git, Visual Studio 2019 solution</RepositoryType>
+    <PackageTags>cellular automatons, simulations, C# class library, ring buffer, decimal math</PackageTags>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageReleaseNotes>Well, this is version "0.1". It's untested yet. Just need a first version for the UI project.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;READABILITY</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="images\ZelluSim_256x256.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

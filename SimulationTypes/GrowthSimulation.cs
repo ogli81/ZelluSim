@@ -60,18 +60,9 @@ namespace ZelluSim.SimulationTypes
                 for (int y = 0; y < yBound; ++y)
                 {
                     self = prev[x, y];
-                    outer = 0m; //<-------------- TODO
+                    outer = GetNeighborsSum(prev, x, y, wrap);
                     last[x, y] = self + (influenceSelf * self) + (influenceOuter * outer);
                 }
-
-            throw new NotImplementedException();
-            //TODO:
-            //add T In(decimal inVal) in parent class
-            //add decimal Out(T outVal) in parent class
-            //add  GetCellValue(cellfield2d, int x, int y)             
-            //add  SetCellValue(cellfield2d, int x, int y, decimal val)
-            //add  GetNeighborsSumWithWrap(cellfield2d, int x, int y)
-            //add  GetNeighborsSumWithWrap(cellfield2d, int x, int y, decimal outsideVal)
         }
 
         protected override void Param1Changed(object sender, EventArgs e)
@@ -84,20 +75,17 @@ namespace ZelluSim.SimulationTypes
             influenceOuter = DecimalMath.Sqrt(param2.Current);
         }
 
+        protected override decimal GetCellValue(IGenericCellField2D<decimal> cellfield2d, int x, int y) => cellfield2d[x, y];
+
+        protected override void SetCellValue(IGenericCellField2D<decimal> cellfield2d, int x, int y, decimal val)
+        {
+            cellfield2d[x, y] = val > 1.0m ? 1.0m : val < 0m ? 0m : val;
+        }
+
 
         //public methods:
 
         public override string Info => "A growth simulation. Cells either grow by themselves (if not dead) or due to their neighbors influence.";
-
-        public override decimal GetCellValue(int x, int y)
-        {
-            return ring.Last[x, y];
-        }
-
-        public override void SetCellValue(int x, int y, decimal val)
-        {
-            ring.Last[x, y] = val > 1.0m ? 1.0m : val < 0m ? 0m : val;
-        }
 
         public void SetSelfInfluence(decimal value)
         {

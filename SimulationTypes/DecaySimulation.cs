@@ -55,6 +55,7 @@ namespace ZelluSim.SimulationTypes
             bool wrap = Settings.IsWrap;
             int xBound = prev.CellsX;
             int yBound = prev.CellsY;
+            int neighbors;
 
             for(int x = 0; x < xBound; ++x)
                 for (int y = 0; y < yBound; ++y)
@@ -63,7 +64,7 @@ namespace ZelluSim.SimulationTypes
                         last[x, y] = 0; //stays dead
                     else
                     {
-                        GetNeighbors(prev, x, y, out int neighbors, wrap);
+                        neighbors = CellFields.GetNumNeighbors(prev, x, y, wrap);
                         decayHere = 0;
                         decayHere += decayRate;
                         reduceBy = neighbors * reduction;
@@ -76,54 +77,19 @@ namespace ZelluSim.SimulationTypes
                 }
         }
 
-        protected int GetNeighbors(IGenericCellField2D<byte> cells, int x, int y, out int n, bool wrap)
+        protected override decimal GetCellValue(IGenericCellField2D<byte> cellfield2d, int x, int y) => cellfield2d[x, y] / 255m;
+
+        protected override void SetCellValue(IGenericCellField2D<byte> cellfield2d, int x, int y, decimal val)
         {
-            return wrap ? GetNeighborsWithWrap(cells, x, y, out n) : GetNeighborsWithoutWrap(cells, x, y, out n);
+            val = val > 1m ? 1m : val;
+            val = val < 0m ? 0m : val;
+            cellfield2d[x, y] = (byte)(255m * val);
         }
 
-        protected int GetNeighborsWithWrap(IGenericCellField2D<byte> cells, int x, int y, out int n)
-        {
-            n = 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.N) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.NE) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.E) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.SE) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.S) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.SW) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.W) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithWrap(x, y, Direction.NW) > 0 ? 1 : 0;
-            return n;
-        }
-
-        protected int GetNeighborsWithoutWrap(IGenericCellField2D<byte> cells, int x, int y, out int n)
-        {
-            n = 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.N, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.NE, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.E, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.SE, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.S, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.SW, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.W, 0) > 0 ? 1 : 0;
-            n += cells.GetCellValueWithoutWrap(x, y, Direction.NW, 0) > 0 ? 1 : 0;
-            return n;
-        }
 
 
         //public methods:
 
         public override string Info => "A decay simulation with variable decay rate. If a cell has neighbors, the decay is reduced or even stopped.";
-
-        public override decimal GetCellValue(int x, int y)
-        {
-            return ring.Last[x, y] / 255m;
-        }
-
-        public override void SetCellValue(int x, int y, decimal val)
-        {
-            val = val > 1m ? 1m : val;
-            val = val < 0m ? 0m : val;
-            ring.Last[x, y] = (byte)(255m * val);
-        }
     }
 }

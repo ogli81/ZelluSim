@@ -212,46 +212,59 @@ namespace ZelluSim.SimulationTypes
             //example: param1's bounds must change because param2's bounds have changed
         }
 
-        protected decimal GetNeighborsSumWithWrap(int x, int y)
+        protected decimal GetNeighborsSum(T cellfield2d, int x, int y, bool wrap, decimal outsideVal = 0.0m)
+        {
+            return wrap ? GetNeighborsSumWithWrap(cellfield2d, x, y) : GetNeighborsSumWithoutWrap(cellfield2d, x, y, outsideVal);
+        }
+
+        protected decimal GetNeighborsSumWithWrap(T cellfield2d, int x, int y)
         {
             int yMax = aring.CellsY - 1;
             int xMax = aring.CellsX - 1;
+            int yN = y == 0 ? yMax : y - 1;
+            int yS = y == yMax ? 0 : y + 1;
+            int xW = x == 0 ? xMax : x - 1;
+            int xE = x == xMax ? 0 : x + 1;
             decimal v = 0;
-            v += GetCellValue(x, y == 0 ? yMax : y - 1); //N
-            v += GetCellValue(x == xMax ? 0 : x + 1, y == 0 ? yMax : y - 1); //NE
-            v += GetCellValue(x == xMax ? 0 : x + 1, y); //E
-            v += GetCellValue(x == xMax ? 0 : x + 1, y == yMax ? 0 : y + 1); //SE
-            v += GetCellValue(x, y == yMax ? 0 : y + 1); //S
-            v += GetCellValue(x == 0 ? xMax : x - 1, y == yMax ? 0 : y + 1); //SW
-            v += GetCellValue(x == 0 ? xMax : x - 1, y); //W
-            v += GetCellValue(x == 0 ? xMax : x - 1, y == 0 ? yMax : y - 1); //NW
+            v += GetCellValue(cellfield2d, x, yN); //N
+            v += GetCellValue(cellfield2d, xE, yN); //NE
+            v += GetCellValue(cellfield2d, xE, y); //E
+            v += GetCellValue(cellfield2d, xE, yS); //SE
+            v += GetCellValue(cellfield2d, x, yS); //S
+            v += GetCellValue(cellfield2d, xW, yS); //SW
+            v += GetCellValue(cellfield2d, xW, y); //W
+            v += GetCellValue(cellfield2d, xW, yN); //NW
             return v;
         }
 
-        protected decimal GetNeighborsSumWithoutWrap(int x, int y, decimal outsideVal)
+        protected decimal GetNeighborsSumWithoutWrap(T cellfield2d, int x, int y, decimal outsideVal)
         {
             int yMax = aring.CellsY - 1;
             int xMax = aring.CellsX - 1;
             decimal v = 0;
-            v += y == 0 ? outsideVal : GetCellValue(x, y - 1); //N
-            v += x == xMax || y == 0 ? outsideVal : GetCellValue(x + 1, y - 1); //NE
-            v += x == xMax ? outsideVal : GetCellValue(x + 1, y); //E
-            v += x == xMax || y == yMax ? outsideVal : GetCellValue(x + 1, y + 1); //SE
-            v += y == yMax ? outsideVal : GetCellValue(x, y + 1); //S
-            v += x == 0 || y == yMax ? outsideVal : GetCellValue(x - 1, y + 1); //SW
-            v += x == 0 ? outsideVal : GetCellValue(x - 1, y); //W
-            v += x == 0 || y == 0 ? outsideVal : GetCellValue(x - 1, y - 1); //NW
+            v += y == 0 ? outsideVal : GetCellValue(cellfield2d, x, y - 1); //N
+            v += x == xMax || y == 0 ? outsideVal : GetCellValue(cellfield2d, x + 1, y - 1); //NE
+            v += x == xMax ? outsideVal : GetCellValue(cellfield2d, x + 1, y); //E
+            v += x == xMax || y == yMax ? outsideVal : GetCellValue(cellfield2d, x + 1, y + 1); //SE
+            v += y == yMax ? outsideVal : GetCellValue(cellfield2d, x, y + 1); //S
+            v += x == 0 || y == yMax ? outsideVal : GetCellValue(cellfield2d, x - 1, y + 1); //SW
+            v += x == 0 ? outsideVal : GetCellValue(cellfield2d, x - 1, y); //W
+            v += x == 0 || y == 0 ? outsideVal : GetCellValue(cellfield2d, x - 1, y - 1); //NW
             return v;
         }
+
+        protected abstract decimal GetCellValue(T cellfield2d, int x, int y);
+
+        protected abstract void SetCellValue(T cellfield2d, int x, int y, decimal value);
 
 
         //public methods:
 
         public abstract string Info { get; }
 
-        public abstract void SetCellValue(int x, int y, decimal val);
+        public virtual decimal GetCellValue(int x, int y) => GetCellValue(aring.Last, x, y);
 
-        public abstract decimal GetCellValue(int x, int y);
+        public virtual void SetCellValue(int x, int y, decimal val) => SetCellValue(aring.Last, x, y, val);
 
         public void GoToOldestGen()
         {

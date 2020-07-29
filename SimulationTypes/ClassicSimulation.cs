@@ -60,7 +60,7 @@ namespace ZelluSim.SimulationTypes
             for (int x = 0; x < prev.CellsX; ++x)
                 for (int y = 0; y < prev.CellsY; ++y)
                 {
-                    GetNeighbors(prev, x, y, out neighbors, wrap);
+                    neighbors = CellFields.GetNumNeighbors(prev, x, y, wrap);
                     if (prev[x, y]) //is alive
                     {
                         if (neighbors < minSurv)

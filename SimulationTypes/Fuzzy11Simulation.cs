@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ZelluSim.CellField;
 
 namespace ZelluSim.SimulationTypes
 {
@@ -59,14 +60,9 @@ namespace ZelluSim.SimulationTypes
                 param1.Current = param2.Current - 1;
         }
 
-
-        //public methods:
-
-        public override string Info => "A modified version of the life simulation by John Horton Conway - we use 11 different states: 0,1,2,3,4,5,6,7,8,9,10 (0 = fully dead, 10 = fully alife).";
-
-        public override decimal GetCellValue(int x, int y)
+        protected override decimal GetCellValue(IGenericCellField2D<byte> cells, int x, int y)
         {
-            switch (ring.Last[x, y])
+            switch (cells[x, y])
             {
                 case 0: return 0.0m;
                 case 1: return 0.1m;
@@ -83,11 +79,16 @@ namespace ZelluSim.SimulationTypes
             }
         }
 
-        public override void SetCellValue(int x, int y, decimal val)
+        protected override void SetCellValue(IGenericCellField2D<byte> cells, int x, int y, decimal val)
         {
             decimal n = val * 10m;
             byte target = n >= 10m ? (byte)10 : n <= 0 ? (byte)0 : (byte)128;
-            ring.Last[x,y] = target != 128 ? target : (byte)(n + 1m);
+            cells[x, y] = target != 128 ? target : (byte)(Math.Ceiling(n));
         }
+
+
+        //public methods:
+
+        public override string Info => "A modified version of the life simulation by John Horton Conway - we use 11 different states: 0,1,2,3,4,5,6,7,8,9,10 (0 = fully dead, 10 = fully alife).";
     }
 }

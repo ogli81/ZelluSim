@@ -61,6 +61,7 @@ namespace ZelluSim.SimulationTypes
             CreateParams();
             CreateStats();
             ConnectEvents();
+            DoCreateNewGeneration();//create our 0th generation ("generation zero")
         }
 
         protected abstract void CreateRingBuffer(); //see: BinaryCellSimulation  and  GenericCellSimulation
@@ -293,19 +294,29 @@ namespace ZelluSim.SimulationTypes
 
         public int NumGens => aring.Length;
 
-        public bool GoBackOneGen() => aring.RemoveLastEntry();
+        public bool GoBackOneGen() { --currentGen; return aring.RemoveLastEntry(); }
 
         public bool GoToGen(int genId)
         {
             if (genId < 0)
                 return false;
             int remove = currentGen - genId;
-            if (remove <= 0)
-                return aring.RemoveLastEntries(remove);
-            else
-                for (int i = -1; i >= remove; i--)
-                    if (!CalculateNextGen())
-                        return false;
+            if (remove >= aring.Length)
+            {
+                GoToOldestGen();
+                return false;
+            }
+            if (remove > 0)
+            {
+                int l1 = aring.Length;
+                bool success = aring.RemoveLastEntries(remove);
+                int l2 = aring.Length;
+                currentGen -= (l1 - l2);
+                return success; //should always return true
+            }
+            for (int i = -1; i >= remove; i--)
+                if (!CalculateNextGen())
+                    return false;
             return true;
         }
 

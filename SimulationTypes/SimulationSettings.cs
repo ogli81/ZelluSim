@@ -8,7 +8,7 @@ namespace ZelluSim.SimulationTypes
     /// "does the world wrap at its borders" and "how many states from the past 
     /// should we keep as history" and things like that.
     /// </summary>
-    public class SimulationSettings
+    public class SimulationSettings : ICloneable
     {
         //state:
 
@@ -37,7 +37,7 @@ namespace ZelluSim.SimulationTypes
 
         public SimulationSettings()
         {
-
+            
         }
 
 
@@ -51,8 +51,7 @@ namespace ZelluSim.SimulationTypes
             SettingsChanged?.Invoke(this, e);
         }
 
-
-        //TODO: use proper C# events
+        //we are now using proper C# events for this
         ///// <summary>
         ///// The simulation for which we will call 'SettingsChanged' after changes to our state.
         ///// </summary>
@@ -154,5 +153,36 @@ namespace ZelluSim.SimulationTypes
         /// The special value '-1' means "unlimited" (of course, there still is a limit of 2^31 due to the fact that we use 32 bit integers for the size).
         /// </summary>
         public int LifeStatsMemMax { get => lifeStatsMemMax; set { lifeStatsMemMax = value; OnSettingsChanged(EventArgs.Empty); } }
+
+        /// <summary>
+        /// We return a clone that follows these rules:<br></br>
+        /// Every primitive field (value types) is a memberwise copy (<see cref="object.MemberwiseClone"/>).<br></br>
+        /// All events get disconnected from the previous listener.
+        /// </summary>
+        /// <returns></returns>
+        public virtual object Clone()
+        {
+            SimulationSettings clone = (SimulationSettings)this.MemberwiseClone();
+
+            //now, how do we remove event handlers?
+            //(1)
+            //this works: (wrote a testcase)
+            clone.SettingsChanged = null;
+            //(2)
+            //this doesn't work (it's not how this works)
+            //clone.SettingsChanged = new EventHandler();
+            //(3)
+            //this works: (wrote a testcase)
+            //Delegate[] dels = (Delegate[])clone.SettingsChanged.GetInvocationList().Clone();
+            //foreach (Delegate del in dels)
+            //    SettingsChanged -= (EventHandler)del;
+            //(4)
+            //this works: (wrote a testcase)
+            //Delegate[] dels = clone.SettingsChanged.GetInvocationList();
+            //foreach (Delegate del in dels)
+            //    SettingsChanged -= (EventHandler)del;
+
+            return clone;
+        }
     }
 }

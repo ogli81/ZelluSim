@@ -32,7 +32,7 @@ namespace ZelluSim.SimulationTypes
     /// </item>
     /// </list>
     /// </summary>
-    class PrngSporeSimulation
+    public class PrngSporeSimulation
     {
     }
 }

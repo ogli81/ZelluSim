@@ -27,7 +27,7 @@ namespace ZelluSim.SimulationTypes
     /// </item>
     /// </list>
     /// </summary>
-    class SporeSimulation
+    public class SporeSimulation
     {
     }
 }

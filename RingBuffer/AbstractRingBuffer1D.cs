@@ -14,12 +14,9 @@ namespace ZelluSim.RingBuffer
     {
         //state:
 
-        protected int lastPos; //where in the ringBuffer is the newest entry?
-        protected int firstPos; //where in the ringBuffer is the oldest entry?
+        protected int firstPos; //where in the ringBuffer is the leftmost entry?
+        protected int count; //how many entries do we have in our ringbuffer?
         //FYI: using int means that we can't have more than 2,147,483,648 positions in the buffer
-
-        protected bool empty; //our newest idea ---> empty ringbuffer now possible!
-        //TODO: look through the complete inheritance tree and implement it where needed!
 
 
         //c'tors:
@@ -55,90 +52,56 @@ namespace ZelluSim.RingBuffer
             Debug.Assert(arrayPos < MemSlots, $"arrayPos too hig: {arrayPos}, we only have: {MemSlots} elements in array");
 #endif
             if (Empty) return false;
-            if (firstPos <= lastPos)
-                return arrayPos >= firstPos && arrayPos <= lastPos;
+            if (firstPos + count <= MemSlots)
+                return arrayPos >= firstPos && arrayPos <= (firstPos + (count-1));
             else
-                return !(arrayPos > lastPos && arrayPos < firstPos);
+                return !(arrayPos >= (firstPos + count - MemSlots) && arrayPos < firstPos);
+        }
+
+        protected void AdvanceFirst()
+        {
+            firstPos++;
+            firstPos %= MemSlots; //possibly faster than the next two lines (branchless programming)
+            //if (firstPos == MemSlots)
+            //    firstPos = 0;
         }
 
         protected void MoveLastForward()
         {
-            if (empty)
-            {
-                empty = false;
-                return;
-            }
-
-            //last increased by one, possibly first needs to move +1 too
-            lastPos++;
-            lastPos %= MemSlots; //might be faster than the next two lines ("branchless programming")
-            //if (lastPos == MemSlots)
-            //    lastPos = 0;
-            if (lastPos == firstPos)
-            {
-                firstPos++;
-                if (firstPos == MemSlots)
-                    firstPos = 0;
-            }
+            if (!Full)
+                count++;
+            else
+                AdvanceFirst();
         }
 
         protected bool MoveLastBack()
         {
-            if (empty)
+            if (Empty)
                 return false;
-
-            if (lastPos == firstPos)
-            {
-                empty = true;
-                return true;
-            }
-
-            lastPos--;
-            if (lastPos < 0)
-                lastPos = MemSlots - 1;
+            count--;
             return true;
         }
 
         protected bool MoveFirstForward()
         {
-            if (empty)
+            if (Empty)
                 return false;
-
-            if (firstPos == lastPos)
-            {
-                empty = true;
-                return true;
-            }
-
-            firstPos++;
-            if (firstPos == MemSlots)
-                firstPos = 0;
+            AdvanceFirst();
             return true;
         }
 
         protected void MoveFirstBack()
         {
-            if (empty)
-            {
-                empty = false;
-                return;
-            }
-
-            //first decreased by one, possibly last needs to move -1 too
+            if (!Full)
+                count++;
             firstPos--;
             if (firstPos == -1)
                 firstPos = MemSlots - 1;
-            if (firstPos == lastPos)
-            {
-                lastPos--;
-                if (lastPos == -1)
-                    lastPos = MemSlots - 1;
-            }
         }
 
         protected void BoundsCheck(int i)
         {
-            if (empty)
+            if (Empty)
                 throw new ArgumentException("This ring buffer is empty! (there are no valid position indices)");
             if (i > Length - 1)
                 throw new ArgumentException("Index i can't be more than Length-1!");
@@ -163,30 +126,7 @@ namespace ZelluSim.RingBuffer
         /// Directly after creating a new instance (first c'tor variant), this value is 0. 
         /// The value can never be more than the number of memory slots (first dimension).
         /// </summary>
-        public int Length
-        {
-            get
-            {
-                if (empty)
-                    return 0;
-
-                if (lastPos >= firstPos)
-                    return lastPos - firstPos + 1;
-
-                //situation: lastPos < firstPos
-                //algorithm:
-                //---
-                //return lastPos + 1 + MemSlots - 1 - firstPos + 1;
-                //---
-                //example:
-                //[0,1,2,3,4] with firstPos = 3 and lastPos = 1
-                //-> MemSlots is 5
-                //-> expected return value is 4
-                //return 1 + 1 + 5 - 1 - 3 + 1
-                //return 4
-                return lastPos + MemSlots - firstPos + 1;
-            }
-        }
+        public int Length => count;
 
         /// <summary>
         /// Is this ring buffer fully filled? (Length is same as number of MemSlots => ring buffer is full)
@@ -196,7 +136,7 @@ namespace ZelluSim.RingBuffer
         /// <summary>
         /// Is this ring buffer totally empty?
         /// </summary>
-        public bool Empty => empty;
+        public bool Empty => count == 0;
 
         /// <summary>
         /// Make the ring buffer bigger, by reserving another entry.
@@ -322,7 +262,11 @@ namespace ZelluSim.RingBuffer
         /// </summary>
         public void RemoveAllExceptLast()
         {
-            firstPos = lastPos;
+            if (count < 2)
+                return;
+            firstPos += (count-1);
+            firstPos %= MemSlots;
+            count = 1;
         }
 
         /// <summary>
@@ -330,7 +274,9 @@ namespace ZelluSim.RingBuffer
         /// </summary>
         public void RemoveAllExceptFirst()
         {
-            lastPos = firstPos;
+            if (count < 2)
+                return;
+            count = 1;
         }
 
         /// <summary>
@@ -339,7 +285,7 @@ namespace ZelluSim.RingBuffer
         public void RemoveAll()
         {
             RemoveAllExceptLast();
-            empty = true;
+            count = 0;
         }
 
         /// <summary>
@@ -351,42 +297,25 @@ namespace ZelluSim.RingBuffer
         /// </summary>
         public void FreeUnusedMemory()
         {
-            if (lastPos > firstPos)
+            if (Empty)
+            {
+                FreeBuffer(0, MemSlots - 1);
+                return;
+            }
+
+            if (firstPos + count <= MemSlots)
             {
                 if (firstPos > 0)
                     FreeBuffer(0, firstPos - 1);
-                if (lastPos < MemSlots - 1)
-                    FreeBuffer(lastPos + 1, MemSlots - 1);
+                if (firstPos + count < MemSlots)
+                    FreeBuffer(firstPos + count, MemSlots - 1);
             }
             else
             {
+                int lastPos = firstPos + count - MemSlots - 1;
                 if (lastPos < firstPos - 1)
                     FreeBuffer(lastPos + 1, firstPos - 1);
             }
-
-            if (Empty)
-            {
-#if DEBUG
-                Debug.Assert(firstPos != lastPos,"Error in our code detected:  firstPos != lastPos  but  empty == true  the state is corrupt!");
-#endif
-                FreeBuffer(firstPos);
-            }
-
-            ////this was an older (and slower) implementation:
-            //int pos = newestGenPos;
-            //int n = MemSlots;
-            //bool done = false;
-            //do
-            //{
-            //    pos++;
-            //    if (pos == n) //<--- question: are these two lines 
-            //        pos = 0; //<--- faster than:  pos %= n  ???
-            //    if (pos == oldestGenPos)
-            //        done = true;
-            //    else
-            //        FreeBuffer(pos); //clear the array here
-            //}
-            //while (!done);
         }
     }
 }

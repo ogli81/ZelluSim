@@ -37,9 +37,8 @@ namespace ZelluSim.RingBuffer
         /// <param name="other">the other instance</param>
         public BinaryRingBuffer1D(BinaryRingBuffer1D other) : base(other.ringBuffer.Count)
         {
-            lastPos = other.lastPos;
             firstPos = other.firstPos;
-            empty = other.empty;
+            count = other.count;
 
             ringBuffer = new BitArray(other.ringBuffer);
         }
@@ -56,31 +55,35 @@ namespace ZelluSim.RingBuffer
         {
             if (other.Empty)
             {
-                empty = true;
+                firstPos = 0;
+                count = 0;
                 return;
             }
 
             //we copy as much as we can from the other ring buffer
 
+            int otherLast = (other.firstPos + (other.count - 1)) % other.MemSlots;
+            int counter = 0;
+
             if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost
             {
-                int iother = other.lastPos;
+                int iother = otherLast;
                 int ithis = MemSlots - 1;
-                lastPos = ithis;
                 do
                 {
+                    counter++;
                     ringBuffer[ithis] = other.ringBuffer[iother];
-
                     if (ithis == 0)
                         break;
-
-                    iother--;
-                    if (iother < 0)
-                        iother = other.MemSlots - 1;
+                    if (iother == other.firstPos)
+                        break;
                     ithis--;
+                    iother--;
+                    iother = (iother < 0) ? other.MemSlots - 1 : iother;
                 }
-                while (iother != other.firstPos);
+                while (true);
                 firstPos = ithis;
+                count = counter;
             }
             else //go from leftmost to rightmost
             {
@@ -89,18 +92,18 @@ namespace ZelluSim.RingBuffer
                 firstPos = ithis;
                 do
                 {
+                    counter++;
                     ringBuffer[ithis] = other.ringBuffer[iother];
-
                     if (ithis == MemSlots - 1)
                         break;
-
-                    iother++;
-                    if (iother > other.MemSlots - 1)
-                        iother = 0;
+                    if (iother == otherLast)
+                        break;
                     ithis++;
+                    iother++;
+                    iother = (iother > other.MemSlots - 1) ? 0 : iother;
                 }
-                while (iother != other.lastPos);
-                lastPos = ithis;
+                while (true);
+                count = counter;
             }
         }
 
@@ -127,7 +130,7 @@ namespace ZelluSim.RingBuffer
         {
             MoveLastForward();
             if (clearWithDefault)
-                ringBuffer[lastPos] = false;
+                ringBuffer[(firstPos + (count - 1)) % MemSlots] = false;
         }
 
         public override void AddFirstEntry(bool clearWithDefault = false)

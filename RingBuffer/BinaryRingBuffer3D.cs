@@ -103,10 +103,8 @@ namespace ZelluSim.RingBuffer
         {
             if (other.Empty)
             {
-                firstPos = other.firstPos;
-                lastPos = other.lastPos;
-                empty = true;
-
+                firstPos = 0;
+                count = 0;
                 if (!copyUnusedElements)
                     return;
             }
@@ -123,7 +121,7 @@ namespace ZelluSim.RingBuffer
             int yBound = Math.Min(CellsY, other.CellsY);
 
             //this code can also be found in a base class (with some slight modifications)
-            //I tried to have it all in one place, but the resulting code was too ugly
+            //I tried to have it all in one place (without code duplication), but the resulting code was too ugly
 
             int add;
             if (startHere == RingBufferEnd.RIGHTMOST_LAST_NEWEST) //go from rightmost to leftmost (down)
@@ -131,24 +129,27 @@ namespace ZelluSim.RingBuffer
             else //go from leftmost to rightmost (up)
                 add = +1;
 
-            int iother = (add == -1) ? other.lastPos : other.firstPos;
+            int otherLast = (other.firstPos + (other.count - 1)) % other.MemSlots;
+            int iother = (add == -1) ? otherLast : other.firstPos;
             int ithis = (add == -1) ? MemSlots - 1 : 0;
             int ithisEnd = (add == -1) ? 0 : MemSlots - 1;
             int iotherWrap = (add == -1) ? -1 : other.MemSlots;
-            if (add == -1) lastPos = ithis; else firstPos = ithis;
-            for (int i = 0; i < iMax; i++)
+            int iotherWrap2 = (add == -1) ? other.MemSlots - 1 : 0;
+            if (add == +1) firstPos = ithis;
+            int i;
+            for (i = 0; i < iMax; i++)
             {
                 CloneCopyEntry(ithis, iother, other, xBound, yBound);
 
                 if (ithis == ithisEnd)
                     break;
                 ithis += add;
-
                 iother += add;
                 if (iother == iotherWrap)
-                    iother = other.MemSlots - 1;
+                    iother = iotherWrap2;
             }
-            if (add == -1) firstPos = ithis; else lastPos = ithis;
+            if (add == -1) firstPos = ithis;
+            count = Math.Min(i+1, other.Length);
         }
 
 

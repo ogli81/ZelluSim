@@ -8,7 +8,7 @@ namespace ZelluSim.SimulationTypes
 {
     /// <summary>
     /// This simulation will look at values of "air pressure" in an atmosphere.
-    /// Each cell contains a level of pressure and will will flow in the 
+    /// Each cell contains a level of pressure and wind will flow in the 
     /// direction of the least pressure. Cells will be 1km x 1km in diameter.
     /// Idea to enhance this simulation: Define (either fixed or random) new 
     /// pressure from one of the 8 directions (N, NE, E, SE, S, SW, W, NW).

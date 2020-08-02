@@ -46,11 +46,45 @@ namespace ZelluSim.SimulationTypes
             param2 = new SimulationParameter("overpopulation", "min number of neighbors for overpopulation, default: 4", 1, 9, 4);
         }
 
+        //// used this to debug a nasty bug:
+        //protected void ShowInfo(IBinaryCellField2D what)
+        //{
+        //    Console.WriteLine("" + what[0, 0] + what[0, 1] + what[0, 2]);
+        //    Console.WriteLine("" + what[1, 0] + what[1, 1] + what[1, 2]);
+        //    Console.WriteLine("" + what[2, 0] + what[2, 1] + what[2, 2]);
+        //    Console.WriteLine();
+        //    Console.WriteLine("N:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.N));
+        //    Console.WriteLine("NE:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.NE));
+        //    Console.WriteLine("E:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.E));
+        //    Console.WriteLine("SE:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.SE));
+        //    Console.WriteLine("S:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.S));
+        //    Console.WriteLine("SW:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.SW));
+        //    Console.WriteLine("W:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.W));
+        //    Console.WriteLine("NW:" + what.GetCellValueWithWrap(1, 1, Misc.Direction.NW));
+        //    int exp = 0;
+        //    exp += what[0, 0] ? 1 : 0;
+        //    exp += what[1, 0] ? 1 : 0;
+        //    exp += what[2, 0] ? 1 : 0;
+        //    exp += what[0, 1] ? 1 : 0;
+        //    exp += what[1, 1] ? 1 : 0;
+        //    exp += what[2, 1] ? 1 : 0;
+        //    exp += what[0, 2] ? 1 : 0;
+        //    exp += what[1, 2] ? 1 : 0;
+        //    exp += what[2, 2] ? 1 : 0;
+        //    Console.WriteLine("expected: " + exp);
+        //    Console.WriteLine("but we get:");
+        //    Console.WriteLine(CellFields.GetNumNeighbors(what, 1, 1, true));
+        //    Console.WriteLine(CellFields.GetNumNeighbors(what, 1, 1, false));
+        //    Console.ReadKey();
+        //}
+
         protected override void DoCalculateNextGen()
         {
             //hint: the new generation was already allocated in AbstractCellSimulation
             IBinaryCellField2D last = ring.Last;
             IBinaryCellField2D prev = ring.Previous;
+
+            //ShowInfo(prev);
 
             int minSurv = (int)param1.Current;
             int overPop = (int)param2.Current;
@@ -79,6 +113,9 @@ namespace ZelluSim.SimulationTypes
                             last[x, y] = false; //stay dead
                     }
                 }
+
+            //Console.WriteLine();
+            //ShowInfo(last);
         }
 
         protected override void Param1Changed(object sender, EventArgs e)

@@ -38,6 +38,11 @@ namespace ZelluSim.CellField
         T GetCellValueWithoutWrap(int x, int y, Direction direction, T outsideVal);
 
         /// <summary>
+        /// Use this if you know what you're doing (it's intended to speed up the "inner parts" of the cell field.
+        /// </summary>
+        T GetCellValueNoCheck(int x, int y, Direction direction);
+
+        /// <summary>
         /// Try to get the content of the cell.
         /// The attempt may fail when x or y is out of bounds (an exception will be thrown).
         /// </summary>

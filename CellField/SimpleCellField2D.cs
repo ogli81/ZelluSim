@@ -90,19 +90,19 @@ namespace ZelluSim.CellField
         public override T GetCellValueWithWrap(int x, int y, Direction direction)
         {
             //BoundsCheck(x, y); //the array will do its own bounds check
-            int ix = x, iy = y; //we could operate on x and y, but let's make new variables (cleaner code)
             switch (direction)
             {
-                case Direction.N: if (y == 0) iy = CellsY - 1; break;
-                case Direction.NE: if (x == CellsX - 1) ix = 0; if (y == 0) iy = CellsY - 1; break;
-                case Direction.E: if (x == CellsX - 1) ix = 0; break;
-                case Direction.SE: if (x == CellsX - 1) ix = 0; if (y == CellsY - 1) iy = 0; break;
-                case Direction.S: if (y == CellsY - 1) iy = 0; break;
-                case Direction.SW: if (x == 0) ix = CellsX - 1; if (y == CellsY - 1) iy = 0; break;
-                case Direction.W: if (x == 0) ix = CellsX - 1; break;
-                case Direction.NW: if (x == 0) ix = CellsX - 1; if (y == 0) iy = CellsY - 1; break;
+                case Direction.N: return GetCellValue(x, (y == 0) ? CellsY - 1 : y - 1);
+                case Direction.NE: return GetCellValue((x == CellsX - 1) ? 0 : x + 1, (y == 0) ? CellsY - 1 : y - 1);
+                case Direction.E: return GetCellValue((x == CellsX - 1) ? 0 : x + 1, y);
+                case Direction.SE: return GetCellValue((x == CellsX - 1) ? 0 : x + 1, (y == CellsY - 1) ? 0 : y + 1);
+                case Direction.S: return GetCellValue(x, (y == CellsY - 1) ? 0 : y + 1);
+                case Direction.SW: return GetCellValue((x == 0) ? CellsX - 1 : x - 1, (y == CellsY - 1) ? 0 : y + 1);
+                case Direction.W: return GetCellValue((x == 0) ? CellsX - 1 : x - 1, y);
+                case Direction.NW: return GetCellValue((x == 0) ? CellsX - 1 : x - 1, (y == 0) ? CellsY - 1 : y - 1);
             }
-            return GetCellValue(ix, iy);
+            //throw new ArgumentException("Unknown direction: " + direction);
+            return default(T); //probably faster?
         }
 
         public override T GetCellValue(int x, int y)

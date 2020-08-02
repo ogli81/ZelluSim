@@ -47,6 +47,21 @@ namespace ZelluSim.CellField
             return n;
         }
 
+        //TODO: use this for faster execution times for the "inner parts" of the cell field, e.g. in the "ClassicSimulation"
+        public static int GetNumNeighborsNoCheck(IBinaryCellField2D cells, int x, int y)
+        {
+            int n = 0;
+            n += cells.GetCellValueNoCheck(x, y, Direction.N) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.NE) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.E) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.SE) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.S) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.SW) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.W) ? 1 : 0;
+            n += cells.GetCellValueWithWrap(x, y, Direction.NW) ? 1 : 0;
+            return n;
+        }
+
 
         /// <summary>
         /// Get the number of living neighbors (life value is true or > 0).

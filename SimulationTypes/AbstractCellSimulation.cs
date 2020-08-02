@@ -296,7 +296,7 @@ namespace ZelluSim.SimulationTypes
 
         public bool GoBackOneGen() { --currentGen; return aring.RemoveLastEntry(); }
 
-        public bool GoToGen(int genId)
+        public bool GoToGen(int genId, IInterruptRequester interrupt)
         {
             if (genId < 0)
                 return false;
@@ -315,7 +315,7 @@ namespace ZelluSim.SimulationTypes
                 return success; //should always return true
             }
             for (int i = -1; i >= remove; i--)
-                if (!CalculateNextGen())
+                if (!CalculateNextGen() || interrupt.RequestingInterrupt())
                     return false;
             return true;
         }

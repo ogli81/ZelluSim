@@ -153,7 +153,7 @@ namespace ZelluSim.RingBuffer
         public override void AddLastEntry(bool clearWithDefault = false)
         {
             MoveLastForward();
-            MakeEntry(lastPos, clearWithDefault);
+            MakeEntry((firstPos + count - 1) % MemSlots, clearWithDefault);
         }
 
         public override void AddFirstEntry(bool clearWithDefault = false)

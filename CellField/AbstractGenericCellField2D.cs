@@ -73,6 +73,25 @@ namespace ZelluSim.CellField
         }
 
         /// <inheritdoc/>
+        public T GetCellValueNoCheck(int x, int y, Direction direction)
+        {
+            //BoundsCheck(x, y); //the array will do its own bounds check
+            switch (direction)
+            {
+                case Direction.N: return GetCellValue(x, y - 1);
+                case Direction.NE: return GetCellValue(x + 1, y - 1);
+                case Direction.E: return GetCellValue(x + 1, y);
+                case Direction.SE: return GetCellValue(x + 1, y + 1);
+                case Direction.S: return GetCellValue(x, y + 1);
+                case Direction.SW: return GetCellValue(x - 1, y + 1);
+                case Direction.W: return GetCellValue(x - 1, y);
+                case Direction.NW: return GetCellValue(x - 1, y - 1);
+            }
+            //throw new ArgumentException("Unknown direction: " + direction);
+            return default(T); //probably faster?
+        }
+
+        /// <inheritdoc/>
         public abstract T GetCellValue(int x, int y);
 
         /// <inheritdoc/>

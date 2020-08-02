@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using ZelluSim.Misc;
 
 namespace ZelluSim.SimulationTypes
 {
@@ -65,7 +66,7 @@ namespace ZelluSim.SimulationTypes
         /// <summary>
         /// Calculate the next "generation". Will advance the CurrentGen by +1.
         /// </summary>
-        /// <returns>true, if further calculation was not possible (and true otherwise)</returns>
+        /// <returns>true, if further calculation was possible (and false otherwise)</returns>
         bool CalculateNextGen();
         /// <summary>
         /// Move back to the oldest "generation" which is stored in the history. The 
@@ -100,8 +101,11 @@ namespace ZelluSim.SimulationTypes
         /// ATTENTION: If you set a very high value, the simulation may run for a very long time 
         /// (and call 'CalculateNextGen' very often).
         /// </param>
+        /// <param name="interrupt">
+        /// Mechanism for premature interrupts of very long computations.
+        /// </param>
         /// <returns>true, if going to the "generation" with that id-number was possible (and false otherwise)</returns>
-        bool GoToGen(int genId);
+        bool GoToGen(int genId, IInterruptRequester interrupt);
 
         /// <summary>
         /// Gives you the value that is stored in that cell (with that x and y coordinates inside the cell field).

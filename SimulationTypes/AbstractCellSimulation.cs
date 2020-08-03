@@ -213,6 +213,10 @@ namespace ZelluSim.SimulationTypes
             //example: param1's bounds must change because param2's bounds have changed
         }
 
+        //TODO: support more than 2 parameters (e.g. scrollbar and panel with sliders in Forms - if more than 2 parameters)
+        //protected virtual void ParamChanged(object sender, EventArgs e)
+        //protected readonly SimulationParameter[] params;
+
         protected decimal GetNeighborsSum(T cellfield2d, int x, int y, bool wrap, decimal outsideVal = 0.0m)
         {
             return wrap ? GetNeighborsSumWithWrap(cellfield2d, x, y) : GetNeighborsSumWithoutWrap(cellfield2d, x, y, outsideVal);
@@ -266,6 +270,44 @@ namespace ZelluSim.SimulationTypes
         public virtual decimal GetCellValue(int x, int y) => GetCellValue(aring.Last, x, y);
 
         public virtual void SetCellValue(int x, int y, decimal val) => SetCellValue(aring.Last, x, y, val);
+
+        public decimal GetSumOfCellValues()
+        {
+            //TODO: move this functionality into the cell field classes (optimizations may be possible, or even cached values)
+            decimal sum = 0;
+            for (int x = 0; x < aring.CellsX; ++x)
+                for (int y = 0; y < aring.CellsY; ++y)
+                    sum += GetCellValue(aring.Last, x, y);
+            return sum;
+        }
+        
+        public decimal GetAverageCellValue()
+        {
+            //TODO: move this functionality into the cell field classes (optimizations may be possible, or even cached values)
+            decimal sum = GetSumOfCellValues();
+            decimal num = (aring.CellsX * aring.CellsY);
+            return sum / num;
+        }
+
+        public decimal GetMedianCellValue()
+        {
+            //TODO: move this functionality into the cell field classes (optimizations may be possible, or even cached values)
+            List<decimal> values = new List<decimal>(aring.CellsX * aring.CellsY);
+            for (int x = 0; x < aring.CellsX; ++x)
+                for (int y = 0; y < aring.CellsY; ++y)
+                    values.Add(GetCellValue(aring.Last, x, y));
+            values.Sort();
+            if(values.Count %2 == 1) //odd number of values, e.g. 9x9 cells
+            {
+                return values[values.Count / 2];
+            }
+            else //even number of values, e.g. 16x16 cells
+            {
+                decimal higher = values[values.Count / 2];
+                decimal lower = values[values.Count / 2 - 1];
+                return (higher + lower) * 0.5m;
+            }
+        }
 
         public void GoToOldestGen()
         {

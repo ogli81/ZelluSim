@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ZelluSim.Misc;
 
 namespace ZelluSim.SimulationTypes
@@ -8,7 +9,7 @@ namespace ZelluSim.SimulationTypes
     /// "does the world wrap at its borders" and "how many states from the past 
     /// should we keep as history" and things like that.
     /// </summary>
-    public class SimulationSettings : ICloneable
+    public class SimulationSettings : ICloneable, IHasItems
     {
         //state:
 
@@ -32,12 +33,25 @@ namespace ZelluSim.SimulationTypes
 
         public event EventHandler SettingsChanged;
 
+        protected List<Item> items = new List<Item>();
+
 
         //c'tors:
 
         public SimulationSettings()
         {
-            
+            items.Add(new Item("MemSlots", "Example: remember 100 cell fields from the past => MemSlots = 100"));
+            items.Add(new Item("SizeX", "How many cells in x direction? Example: 64 x 32 field => SizeX = 64"));
+            items.Add(new Item("SizeY", "How many cells in y direction? Example: 64 x 32 field => SizeY = 32"));
+            items.Add(new Item("IsWrap", "Do we have a wrap-around? (wrap = \"if I leave east border, I enter from west border again...\")"));
+            items.Add(new Item("TrackLifeStats", "Should we track the overall life sum as statistics?"));
+            items.Add(new Item("LifeStatsMem", "How many data slots does the life sum statistics have?"));
+            items.Add(new Item("MemSlotsFullBehavior", "How should the program react when MemSlots is exceeded?"));
+            items.Add(new Item("MemSlotsGrow", "e.g. 2 means \"double the size when resizing\""));
+            items.Add(new Item("MemSlotsMax", "Attempts to resize beyond this value will fail."));
+            items.Add(new Item("LifeStatsFullBehavior", "How should the program react when LifeStatsMem is exceeded?"));
+            items.Add(new Item("LifeStatsMemGrow", "e.g. 2 means \"double the size when resizing\""));
+            items.Add(new Item("LifeStatsMemMax", "Attempts to resize beyond this value will fail."));
         }
 
 
@@ -74,6 +88,10 @@ namespace ZelluSim.SimulationTypes
 
         //public methods:
 
+        public int NumItems => items.Count;
+
+        public Item GetItem(int index) => items[index];
+
         /// <summary>
         /// If we want to change multiple values, we might be interested in temporarily silencing update events.
         /// </summary>
@@ -100,11 +118,11 @@ namespace ZelluSim.SimulationTypes
         /// </summary>
         public int MemSlots { get => memSlots; set { memSlots = value; OnSettingsChanged(EventArgs.Empty); } }
         /// <summary>
-        /// How many cells in x direction? Example: 32 x 32 field => SizeX = 32.
+        /// How many cells in x direction? Example: 64 x 32 field => SizeX = 64.
         /// </summary>
         public int SizeX { get => sizeX; set { sizeX = value; OnSettingsChanged(EventArgs.Empty); } }
         /// <summary>
-        /// How many cells in y direction? Example: 32 x 32 field => SizeY = 32.
+        /// How many cells in y direction? Example: 64 x 32 field => SizeY = 32.
         /// </summary>
         public int SizeY { get => sizeY; set { sizeY = value; OnSettingsChanged(EventArgs.Empty); } }
 

@@ -22,6 +22,7 @@ namespace ZelluSim.Misc
         protected readonly bool[] flags;
         protected string[] Names => Enum.GetNames(type);
         protected Array Values => Enum.GetValues(type);
+        protected object[] intValues;
 
 
         //c'tor:
@@ -47,6 +48,13 @@ namespace ZelluSim.Misc
 
                 //we should never end here, because only the 8 integer types (see above) are allowed
                 default: throw new ArgumentException($"Can't handle type {Enum.GetUnderlyingType(type)}");
+            }
+            intValues = new object[Values.Length];
+            int i = -1;
+            foreach (object val in Values)
+            {
+                ++i;
+                intValues[i] = Convert.ChangeType(val, valueType);
             }
 
             flags = new bool[Values.Length];
@@ -77,16 +85,40 @@ namespace ZelluSim.Misc
             {
                 //we take the biggest signed integer type: long
                 long bits = 0;
-                for (int i = 0; i < Values.Length; ++i)
-                    bits |= (flags[i] ? (long)Values.GetValue(i) : 0);
+                if (valueType == typeof(long))
+                {
+                    for (int i = 0; i < intValues.Length; ++i)
+                        bits |= (flags[i] ? (long)intValues[i] : 0);
+                }
+                else
+                {
+                    long converted;
+                    for (int i = 0; i < intValues.Length; ++i)
+                    {
+                        converted = (long)System.Convert.ChangeType(intValues[i], typeof(long));
+                        bits |= (flags[i] ? converted : 0);
+                    }
+                }
                 return (Enum)Enum.ToObject(type, bits);
             }
-            else
+            else //unsigned
             {
                 //we take the biggest unsigned integer type: ulong
                 ulong bits = 0;
-                for (int i = 0; i < Values.Length; ++i)
-                    bits |= (flags[i] ? (ulong)Values.GetValue(i) : 0);
+                if (valueType == typeof(ulong))
+                {
+                    for (int i = 0; i < intValues.Length; ++i)
+                        bits |= (flags[i] ? (ulong)intValues[i] : 0);
+                }
+                else
+                {
+                    ulong converted;
+                    for (int i = 0; i < intValues.Length; ++i)
+                    {
+                        converted = (ulong)System.Convert.ChangeType(intValues[i], typeof(ulong));
+                        bits |= (flags[i] ? converted : 0);
+                    }
+                }
                 return (Enum)Enum.ToObject(type, bits);
             }
         }
@@ -106,12 +138,12 @@ namespace ZelluSim.Misc
             flags[index] = set;
         }
 
-        public void CheckValue(object value)
+        public void CheckIntValue(object intValue)
         {
-            if (value == null)
+            if (intValue == null)
                 throw new ArgumentNullException("can't be null!");
 
-            switch (value.GetType().ToString())
+            switch (intValue.GetType().ToString())
             {
                 case "System.SByte":
                 case "System.Int16":
@@ -129,18 +161,19 @@ namespace ZelluSim.Misc
                         throw new ArgumentException("We operate with unsigned integers!");
                     break;
 
-                default: throw new ArgumentException($"Can't handle type {value.GetType()}");
+                default: throw new ArgumentException($"Can't handle type {intValue.GetType()}");
             }
 
-            if (!ValueKnown(value))
-                throw new ArgumentException($"value {value} not valid!");
+            if (!IntValueKnown(intValue))
+                throw new ArgumentException($"value {intValue} not valid!");
         }
 
-        public void SetFlag(object value, bool set)
+        public void SetFlag(object intValue, bool set)
         {
-            CheckValue(value);
-            value = Convert.ChangeType(value, valueType);
-            int index = Array.IndexOf(Values, value);
+            CheckIntValue(intValue);
+            int index = intValue.GetType().Equals(valueType) ?
+                Array.IndexOf(intValues, intValue) :
+                Array.IndexOf(intValues, Convert.ChangeType(intValue, valueType));
             flags[index] = set;
         }
 
@@ -148,13 +181,13 @@ namespace ZelluSim.Misc
 
         public bool NameKnown(string name) => name != null && Array.IndexOf(Names, name) > -1;
 
-        public bool ValueKnown(object value) => value != null && Array.IndexOf(Values, Convert.ChangeType(value, valueType)) > -1;
+        public bool IntValueKnown(object value) => value != null && Array.IndexOf(intValues, Convert.ChangeType(value, valueType)) > -1;
 
         public bool EnumOfCorrectType(Enum en) => en != null && en.GetType().Equals(type); 
 
         public Type Type => type;
 
-        public Type ValueType => valueType;
+        public Type IntValueType => valueType;
         
         public bool Signed => signed;
 
@@ -162,7 +195,7 @@ namespace ZelluSim.Misc
 
         public string GetName(int index) => Names[index];
 
-        public object GetValue(int index) => Values.GetValue(index);
+        public object GetIntValue(int index) => intValues[index];
 
         public bool GetFlag(int index) => flags[index]; //might throw out-of-bounds exception
 
@@ -174,11 +207,13 @@ namespace ZelluSim.Misc
             return flags[index];
         }
 
-        public bool GetFlag(object value)
+        public bool GetFlag(object intValue)
         {
-            CheckValue(value);
-            value = Convert.ChangeType(value, valueType);
-            int index = Array.IndexOf(Values, value);
+            CheckIntValue(intValue);
+            intValue = Convert.ChangeType(intValue, valueType);
+            int index = intValue.GetType().Equals(valueType) ?
+                Array.IndexOf(intValues, intValue) :
+                Array.IndexOf(intValues, Convert.ChangeType(intValue, valueType));
             return flags[index];
         }
     }

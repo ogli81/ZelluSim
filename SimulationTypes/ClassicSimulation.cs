@@ -34,7 +34,7 @@ namespace ZelluSim.SimulationTypes
 
         public ClassicSimulation(SimulationSettings settings) : base(settings)
         {
-            Init();
+            CallInit();
         }
 
 

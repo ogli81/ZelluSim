@@ -30,7 +30,7 @@ namespace ZelluSim.SimulationTypes
 
         public DecaySimulation(SimulationSettings settings) : base(settings)
         {
-            Init();
+            CallInit();
         }
 
 

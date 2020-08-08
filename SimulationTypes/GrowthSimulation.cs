@@ -34,7 +34,7 @@ namespace ZelluSim.SimulationTypes
 
         public GrowthSimulation(SimulationSettings settings) : base(settings)
         {
-            Init();
+            CallInit();
         }
 
 

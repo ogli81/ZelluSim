@@ -55,7 +55,16 @@ namespace ZelluSim.SimulationTypes
         /// Call this in the last line of your c'tor. When making subclasses of subclasses: 
         /// Overwrite this method with an empty body and make your own injection method.
         /// </summary>
-        protected void Init()
+        protected virtual void CallInit()
+        {
+            Init();
+        }
+
+        /// <summary>
+        /// Initialization routine - to be called in <see cref="AbstractCellSimulation{T}.CallInit"/> 
+        /// (or in a similar method) at the end of your c'tor.
+        /// </summary>
+        protected virtual void Init()
         {
             CreateRingBuffer();
             CreateParams();

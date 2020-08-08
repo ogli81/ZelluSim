@@ -30,7 +30,7 @@ namespace ZelluSim.SimulationTypes
 
         public Fuzzy5Simulation(SimulationSettings settings) : base(settings)
         {
-            Init();
+            CallInit();
         }
 
 

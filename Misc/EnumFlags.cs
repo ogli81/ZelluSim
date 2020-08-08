@@ -230,14 +230,41 @@ namespace ZelluSim.Misc
             
             if(signed)
             {
-                long converted = (long)System.Convert.ChangeType(val, typeof(long));
+                long converted = (long)Convert.ChangeType(val, typeof(long));
                 return converted == 0;
             }
             else //unsigned
             {
-                ulong converted = (ulong)System.Convert.ChangeType(val, typeof(ulong));
+                ulong converted = (ulong)Convert.ChangeType(val, typeof(ulong));
                 return converted == 0;
             }
+        }
+
+        public bool HasAnySet(bool set = true)
+        {
+            for(int i = 0; i < NumValues; ++i)
+            {
+                if (IsZero(i))
+                    continue;
+                if (flags[i] == set)
+                    return true;
+            }
+            return false;
+        }
+
+        public (int set, int of) HowManySet(bool set = true)
+        {
+            int many = 0;
+            int n = 0;
+            for (int i = 0; i < NumValues; ++i)
+            {
+                if (IsZero(i))
+                    continue;
+                if (flags[i] == set)
+                    ++many;
+                ++n;
+            }
+            return (many, n);
         }
     }
 }

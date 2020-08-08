@@ -138,6 +138,13 @@ namespace ZelluSim.Misc
             flags[index] = set;
         }
 
+        public void SetAllFlags(bool set)
+        {
+            //Array.Fill() not in my version of .Net :-(
+            for (int i = 0; i < flags.Length; ++i)
+                flags[i] = set;
+        }
+
         public void CheckIntValue(object intValue)
         {
             if (intValue == null)
@@ -215,6 +222,22 @@ namespace ZelluSim.Misc
                 Array.IndexOf(intValues, intValue) :
                 Array.IndexOf(intValues, Convert.ChangeType(intValue, valueType));
             return flags[index];
+        }
+
+        public bool IsZero(int index)
+        {
+            object val = GetIntValue(index);
+            
+            if(signed)
+            {
+                long converted = (long)System.Convert.ChangeType(val, typeof(long));
+                return converted == 0;
+            }
+            else //unsigned
+            {
+                ulong converted = (ulong)System.Convert.ChangeType(val, typeof(ulong));
+                return converted == 0;
+            }
         }
     }
 }

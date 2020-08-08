@@ -11,6 +11,8 @@ namespace ZelluSim.Misc
     {
         //static methods:
 
+        public static bool IsEnum(Type ty) => ty.BaseType == typeof(Enum);
+
         public static bool EnumHasFlags(Enum en) => en.GetType().GetCustomAttributes<FlagsAttribute>().Any();
     }
 }

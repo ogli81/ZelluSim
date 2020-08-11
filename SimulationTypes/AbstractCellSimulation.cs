@@ -53,7 +53,7 @@ namespace ZelluSim.SimulationTypes
 
         /// <summary>
         /// Call this in the last line of your c'tor. When making subclasses of subclasses: 
-        /// Overwrite this method with an empty body and make your own injection method.
+        /// Overwrite this method with an empty body and make a new, similar injection method.
         /// </summary>
         protected virtual void CallInit()
         {

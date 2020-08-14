@@ -1,0 +1,4 @@
+﻿https://icoconvert.com/
+That's the website where I uploaded the .png file and from where I got the .ico file.
+The website has many options, for example you can upload multiple images for multiple resolutions.
+I also made use of the "Apply styles" option and got a circle shape for the icon (the outside is transparent).
